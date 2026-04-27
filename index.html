@@ -3,154 +3,205 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ByAltun | Next-Gen Studio</title>
+    <title>dev/ /ByAltun </title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Bento+Sans&family=Inter:wght@300;600;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;400;800&display=swap');
         
-        :root { --p: #6366f1; --s: #a855f7; }
-        body { background: #020617; color: #f8fafc; font-family: 'Inter', sans-serif; overflow-x: hidden; }
-
-        /* Hareketli Mesh Arka Plan */
-        .mesh-bg {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: 
-                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.15) 0px, transparent 50%);
-            z-index: -1; animation: meshMove 10s infinite alternate;
+        body { 
+            margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #000; color: #fff; overflow-x: hidden; transition: 1s ease;
         }
 
-        @keyframes meshMove { 0% { transform: scale(1); } 100% { transform: scale(1.1); } }
-
-        /* Bento Grid Kartları */
-        .bento-card {
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 32px;
-            transition: all 0.5s cubic-bezier(0.2, 1, 0.3, 1);
+        /* Dinamik Hava Durumu Katmanları */
+        #weather-overlay {
+            position: fixed; top:0; left:0; width:100%; height:100%; z-index: -1; pointer-events: none;
         }
 
-        .bento-card:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: var(--p);
-            transform: scale(1.02);
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(30px) saturate(150%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 40px;
         }
 
-        .flag-icon { width: 24px; height: 18px; border-radius: 3px; object-fit: cover; }
-        
-        /* Modern Buton */
-        .shimmer-btn {
-            background: linear-gradient(110deg, #fff 45%, #e2e8f0 50%, #fff 55%);
-            background-size: 200% 100%;
-            animation: shimmer 3s infinite linear;
-            color: #000; font-weight: 800; border-radius: 16px;
-        }
+        .flag-img { width: 22px; height: 14px; border-radius: 2px; }
 
-        @keyframes shimmer { to { background-position: -200% 0; } }
+        /* Yağmur Efekti */
+        .rain { position: absolute; background: white; width: 1px; height: 20px; opacity: 0.2; }
+
+        /* Güneş Parlaması */
+        .sun-glow {
+            position: absolute; top: -10%; right: -10%; width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(255,180,0,0.15) 0%, transparent 70%);
+            border-radius: 50%; filter: blur(50px);
+        }
 
         [v-cloak] { display: none; }
     </style>
 </head>
-<body class="antialiased">
-    <div class="mesh-bg"></div>
+<body>
+    <div id="weather-overlay"></div>
 
-    <div id="app" v-cloak class="min-h-screen flex flex-col">
-        <nav class="flex justify-between items-center p-8 max-w-7xl mx-auto w-full">
-            <div class="text-3xl font-black tracking-tighter italic">ByAltun</div>
-            
-            <div class="flex gap-4 bg-white/5 p-2 rounded-2xl border border-white/10">
+    <div id="app" v-cloak>
+        <nav class="p-6 flex justify-between items-center max-w-7xl mx-auto relative z-10">
+            <div class="flex items-center gap-4 glass-panel px-6 py-3">
+                <span class="text-2xl font-black italic tracking-tighter">ByAltun</span>
+                <div class="h-4 w-[1px] bg-white/20 mx-2"></div>
+                <div class="flex flex-col text-[10px] uppercase tracking-widest opacity-60 font-bold">
+                    <span>{{ currentTime }}</span>
+                    <span>{{ city }} / {{ weatherDesc }} {{ temp }}°C</span>
+                </div>
+            </div>
+
+            <div class="flex gap-2 glass-panel p-2">
                 <button v-for="(l, code) in languages" @click="currentLang = code" 
-                        class="p-2 rounded-xl transition flex items-center gap-2 text-xs font-bold"
-                        :class="currentLang === code ? 'bg-white/10 border border-white/20' : 'opacity-40 hover:opacity-100'">
-                    <img :src="l.flagUrl" class="flag-icon" :alt="code">
-                    <span class="hidden md:inline">{{ code.toUpperCase() }}</span>
+                        class="p-2 rounded-xl transition flex items-center gap-2 text-[10px] font-black"
+                        :class="currentLang === code ? 'bg-white/10' : 'opacity-30 hover:opacity-100'">
+                    <img :src="l.flag" class="flag-img"> {{ code.toUpperCase() }}
                 </button>
             </div>
         </nav>
 
-        <section class="max-w-7xl mx-auto px-6 py-12 w-full text-center md:text-left">
-            <h1 class="text-7xl md:text-9xl font-black tracking-tight leading-[0.85] mb-8">
-                {{ t.heroTitle }}<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500">LABS.</span>
+        <header class="min-h-[70vh] flex flex-col justify-center px-10 max-w-7xl mx-auto">
+            <div class="inline-block glass-panel px-4 py-1 text-[10px] tracking-[6px] uppercase opacity-50 mb-8 w-fit">
+                {{ t.status }}
+            </div>
+            <h1 class="text-[clamp(3rem,12vw,10rem)] font-extrabold leading-[0.8] tracking-tighter mb-10">
+                STAY<br><span class="opacity-20 italic">AHEAD.</span>
             </h1>
-            <p class="text-lg md:text-2xl opacity-40 max-w-2xl font-light">{{ t.heroSub }}</p>
-        </section>
+            <p class="text-lg md:text-2xl max-w-2xl opacity-40 leading-relaxed font-light">
+                {{ t.heroSub }}
+            </p>
+        </header>
 
-        <main class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 px-6 w-full mb-20">
-            <div class="bento-card md:col-span-2 p-10 flex flex-col justify-between group min-h-[400px]">
-                <div>
-                    <div class="w-16 h-16 bg-amber-500 rounded-2xl flex items-center justify-center mb-8 shadow-2xl shadow-amber-500/20">
-                        <i class="fas fa-kaaba text-3xl text-black"></i>
+        <main class="grid grid-cols-1 md:grid-cols-12 gap-6 p-6 max-w-[1600px] mx-auto">
+            
+            <div class="md:col-span-8 glass-panel p-12 flex flex-col justify-between group min-h-[500px] relative overflow-hidden">
+                <div class="relative z-10">
+                    <div class="w-20 h-20 bg-amber-500 rounded-[2rem] flex items-center justify-center mb-10 rotate-12 group-hover:rotate-0 transition-all duration-700">
+                        <i class="fas fa-kaaba text-4xl text-black"></i>
                     </div>
-                    <h2 class="text-5xl font-black mb-4 italic">Mikat</h2>
-                    <p class="text-xl opacity-50 max-w-md">{{ t.mikatDesc }}</p>
+                    <h2 class="text-6xl font-black italic mb-6">MİKAT</h2>
+                    <p class="text-xl opacity-50 max-w-lg">{{ t.mikatDesc }}</p>
                 </div>
-                <div class="flex justify-between items-end">
-                    <span class="text-xs font-bold opacity-20 tracking-widest uppercase">Mobile / Religion</span>
-                    <a href="https://byaltun4.github.io/mikat/index.html" class="shimmer-btn px-8 py-4 transition-transform active:scale-95">{{ t.btnVisit }}</a>
+                <div class="flex justify-between items-end relative z-10">
+                    <div class="text-xs opacity-20 uppercase tracking-[4px]">Precision / Spiritual / Mobile</div>
+                    <a href="https://byaltun4.github.io/mikat/index.html" class="bg-white text-black px-12 py-5 rounded-2xl font-black hover:scale-105 transition">{{ t.btn }}</a>
                 </div>
+                <div class="absolute -right-20 -bottom-20 text-[20rem] opacity-[0.02] font-black italic -rotate-12">PRAY</div>
             </div>
 
-            <div class="bento-card p-10 flex flex-col justify-between min-h-[400px] border-emerald-500/20">
-                <div class="w-16 h-16 bg-emerald-500 rounded-2xl flex items-center justify-center mb-8">
+            <div class="md:col-span-4 glass-panel p-10 flex flex-col justify-between border-emerald-500/20">
+                <div class="w-16 h-16 bg-emerald-500 rounded-2xl flex items-center justify-center">
                     <i class="fas fa-paw text-3xl text-white"></i>
                 </div>
                 <div>
-                    <h2 class="text-4xl font-black mb-4 uppercase">PawPal</h2>
-                    <p class="opacity-50">{{ t.pawpalDesc }}</p>
+                    <h2 class="text-4xl font-black mb-4 uppercase">PAWPAL</h2>
+                    <p class="opacity-40 leading-relaxed">{{ t.pawpalDesc }}</p>
                 </div>
-                <a href="https://byaltun4.github.io/pawpal/" class="mt-8 py-4 border border-white/10 rounded-2xl text-center font-bold hover:bg-white hover:text-black transition">{{ t.btnVisit }}</a>
+                <a href="https://byaltun4.github.io/pawpal/" class="py-4 border border-white/10 rounded-2xl text-center font-bold hover:bg-white hover:text-black transition uppercase text-xs tracking-widest">{{ t.btn }}</a>
             </div>
 
-            <div class="bento-card md:col-span-3 p-12 flex flex-col md:flex-row items-center gap-12 bg-gradient-to-br from-blue-600/10 to-transparent border-blue-500/30">
-                <div class="w-32 h-32 md:w-48 md:h-48 bg-blue-600 rounded-[3rem] flex items-center justify-center shadow-3xl shrink-0 rotate-3 group-hover:rotate-0 transition-transform">
-                    <i class="fas fa-faucet-drip text-6xl md:text-8xl text-white"></i>
+            <div class="md:col-span-12 glass-panel p-12 bg-gradient-to-r from-blue-900/20 to-transparent flex flex-col md:flex-row items-center gap-12">
+                <div class="w-40 h-40 bg-blue-600 rounded-[3rem] flex items-center justify-center shadow-2xl shrink-0">
+                    <i class="fas fa-faucet-drip text-7xl text-white"></i>
                 </div>
-                <div class="flex-1 text-center md:text-left">
-                    <h2 class="text-5xl md:text-7xl font-black mb-6 tracking-tighter">INVER WATER</h2>
-                    <p class="text-xl opacity-60 mb-8 max-w-3xl">{{ t.inverDesc }}</p>
-                    <a href="https://inver2-ops.github.io/" class="inline-block bg-blue-600 px-10 py-5 rounded-2xl font-black hover:shadow-[0_0_30px_rgba(37,99,235,0.5)] transition">{{ t.btnVisit }}</a>
+                <div class="flex-1">
+                    <h2 class="text-5xl font-black mb-4">INVER WATER</h2>
+                    <p class="text-xl opacity-40 max-w-4xl">{{ t.inverDesc }}</p>
                 </div>
+                <a href="https://inver2-ops.github.io/" class="px-12 py-6 bg-blue-600 rounded-2xl font-black hover:shadow-[0_0_50px_rgba(37,99,235,0.4)] transition">{{ t.btn }}</a>
             </div>
+
         </main>
 
-        <section class="max-w-7xl mx-auto px-6 w-full mb-32">
-            <div class="bento-card p-16 text-center border-white/5 relative overflow-hidden group">
-                <div class="absolute inset-0 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition"></div>
-                <h2 class="text-4xl md:text-6xl font-black mb-12 tracking-tight italic uppercase">{{ t.contactTitle }}</h2>
-                
-                <div class="inline-flex flex-col md:flex-row items-center gap-4 bg-black/40 p-4 rounded-[2.5rem] border border-white/10">
-                    <div class="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center">
-                        <i class="fas fa-envelope text-xl"></i>
-                    </div>
-                    <a href="mailto:altun4@gmail.com" class="text-2xl md:text-4xl font-black px-6 hover:text-indigo-400 transition tracking-tighter">
-                        altun4@gmail.com
-                    </a>
-                </div>
+        <footer class="mt-32 p-10 text-center">
+            <div class="max-w-4xl mx-auto glass-panel p-16 border-white/5 group hover:border-white/20 transition">
+                <p class="text-xs tracking-[10px] opacity-30 mb-10 uppercase">{{ t.contactHead }}</p>
+                <a href="mailto:altun4@gmail.com" class="text-3xl md:text-6xl font-black tracking-tighter hover:text-blue-500 transition break-all">
+                    altun4@gmail.com
+                </a>
             </div>
-        </section>
-
-        <footer class="mt-auto p-12 text-center border-t border-white/5">
-            <div class="text-2xl font-black opacity-10 tracking-[15px] mb-4">BYALTUN</div>
-            <div class="text-[10px] opacity-30 tracking-[5px] uppercase">Kyiv / Studio / 2026</div>
+            <div class="mt-20 text-[10px] tracking-[8px] opacity-20 font-bold uppercase italic">
+                ByAltun / KYIV STUDIO / MMXXVI
+            </div>
         </footer>
     </div>
 
     <script>
-        const { createApp, computed, ref } = Vue;
+        const { createApp, ref, onMounted, computed } = Vue;
+
         createApp({
             setup() {
                 const currentLang = ref('tr');
+                const city = ref('Kyiv');
+                const temp = ref('22');
+                const weatherDesc = ref('Sunny');
+                const currentTime = ref('');
+
                 const languages = {
-                    tr: { flagUrl: 'https://flagcdn.com/tr.svg', heroTitle: 'SIFIR HATA.', heroSub: 'Modern mobil mimari ve kusursuz kullanıcı deneyimi için buradayız.', mikatDesc: 'Zamanın ötesinde, minimalist namaz vakitleri ve kıble rehberi.', pawpalDesc: 'Tüylü dostlarınız için akıllı takip ve bakım asistanı.', inverDesc: 'Kyiv sakinleri için anlık su kesintisi ve döviz takip platformu.', btnVisit: 'İNCELE', contactTitle: 'BAŞLAYALIM MI?' },
-                    en: { flagUrl: 'https://flagcdn.com/us.svg', heroTitle: 'ZERO FAULT.', heroSub: 'Crafting flawless mobile experiences and modern architectures.', mikatDesc: 'Beyond time, a minimalist prayer times and qibla guide.', pawpalDesc: 'Smart tracking and care assistant for your furry friends.', inverDesc: 'Real-time water outage and currency tracking for Kyiv.', btnVisit: 'DISCOVER', contactTitle: 'READY TO BUILD?' },
-                    ua: { flagUrl: 'https://flagcdn.com/ua.svg', heroTitle: 'НУЛЬ ПОМИЛОК.', heroSub: 'Створюємо бездоганний мобільний досвід та сучасну архітектуру.', mikatDesc: 'Мінімалістичний гід у часі молитов та напрямку Кібли.', pawpalDesc: 'Розумний помічник для відстеження здоров’я ваших улюбленців.', inverDesc: 'Відстеження відключень води та валют у Києві в реальному часі.', btnVisit: 'ВІДКРИТИ', contactTitle: 'ПОЧНЕМО?' },
-                    ru: { flagUrl: 'https://flagcdn.com/ru.svg', heroTitle: 'НОЛЬ ОШИБОК.', heroSub: 'Создаем безупречный мобильный опыт и современную архитектуру.', mikatDesc: 'Минималистичный гид по времени молитв и направлению Киблы.', pawpalDesc: 'Умный помощник для отслеживания здоровья ваших питомцев.', inverDesc: 'Отслеживание отключений воды и валют в Киеве в реальном времени.', btnVisit: 'ОТКРЫТЬ', contactTitle: 'НАЧНЕМ?' }
+                    tr: { flag: 'https://flagcdn.com/tr.svg', status: 'DİJİTAL ATÖLYE', heroSub: 'Geleceğin standartlarını bugün, en ince detayına kadar kodlayarak inşa ediyoruz.', mikatDesc: 'Geleneksel değerleri modern teknolojiyle buluşturan, yüksek hassasiyetli dini rehber.', pawpalDesc: 'Evcil hayvan bakımında zekayı ve şefkati birleştiren akıllı asistan.', inverDesc: 'Kyiv için hayati altyapı verilerini ve finansal nabzı tutan entegre platform.', btn: 'KEŞFET', contactHead: 'BİZE ULAŞIN' },
+                    en: { flag: 'https://flagcdn.com/us.svg', status: 'DIGITAL ATELIER', heroSub: 'Building tomorrow\'s standards today by coding down to the finest detail.', mikatDesc: 'A high-precision spiritual guide blending traditional values with modern tech.', pawpalDesc: 'A smart assistant combining intelligence and compassion in pet care.', inverDesc: 'Integrated platform for real-time infrastructure and financial data in Kyiv.', btn: 'EXPLORE', contactHead: 'GET IN TOUCH' },
+                    ua: { flag: 'https://flagcdn.com/ua.svg', status: 'ЦИФРОВА МАЙСТЕРНЯ', heroSub: 'Будуємо стандарти завтрашнього дня вже сьогодні.', mikatDesc: 'Високоточний духовний гід, що поєднує традиції та технології.', pawpalDesc: 'Розумний помічник для догляду за вашими улюбленцями.', inverDesc: 'Платформа для моніторингу інфраструктури та фінансів Києва.', btn: 'ВІДКРИТИ', contactHead: 'ЗВ\'ЯЖІТЬСЯ' },
+                    ru: { flag: 'https://flagcdn.com/ru.svg', status: 'ЦИФРОВАЯ МАСТЕРСКАЯ', heroSub: 'Строим стандарты завтрашнего дня уже сегодня.', mikatDesc: 'Высокоточный духовный гид, сочетающий традиции и технологии.', pawpalDesc: 'Умный помощник для ухода за вашими питомцами.', inverDesc: 'Платформа для мониторинга инфраструктуры и финансов Киева.', btn: 'ОТКРЫТЬ', contactHead: 'СВЯЗАТЬСЯ' }
                 };
+
                 const t = computed(() => languages[currentLang.value]);
-                return { currentLang, languages, t };
+
+                // Hava Durumu ve Zaman Motoru
+                const updateApp = () => {
+                    const now = new Date();
+                    currentTime.value = now.toLocaleTimeString();
+                    
+                    // Saate göre tema değiştir
+                    const hour = now.getHours();
+                    const overlay = document.getElementById('weather-overlay');
+                    if(hour > 19 || hour < 6) {
+                        document.body.style.background = "#00050a"; // Gece
+                    } else {
+                        document.body.style.background = "#050505"; // Gündüz
+                    }
+                };
+
+                const getWeatherData = async () => {
+                    try {
+                        const res = await fetch('https://wttr.in/Kyiv?format=j1');
+                        const data = await res.json();
+                        temp.value = data.current_condition[0].temp_C;
+                        weatherDesc.value = data.current_condition[0].weatherDesc[0].value;
+                        
+                        // Hava durumuna göre efekt ekle
+                        if(weatherDesc.value.toLowerCase().includes('rain')) {
+                            createRain();
+                        } else if(weatherDesc.value.toLowerCase().includes('sun')) {
+                            const sun = document.createElement('div');
+                            sun.className = 'sun-glow';
+                            document.getElementById('weather-overlay').appendChild(sun);
+                        }
+                    } catch (e) { console.log("Hava durumu alınamadı."); }
+                };
+
+                const createRain = () => {
+                    const container = document.getElementById('weather-overlay');
+                    for(let i=0; i<100; i++) {
+                        const drop = document.createElement('div');
+                        drop.className = 'rain';
+                        drop.style.left = Math.random() * 100 + 'vw';
+                        drop.style.animationDuration = (Math.random() * 1 + 0.5) + 's';
+                        drop.style.top = Math.random() * 100 + 'vh';
+                        container.appendChild(drop);
+                    }
+                };
+
+                onMounted(() => {
+                    setInterval(updateApp, 1000);
+                    getWeatherData();
+                });
+
+                return { currentLang, languages, t, city, temp, weatherDesc, currentTime };
             }
         }).mount('#app');
     </script>
