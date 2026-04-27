@@ -3,145 +3,188 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Altun Dev Studio | Premium Apps</title>
+    <title>Dev / ByAltun | Premium Showcase</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;400;700;800&display=swap');
         
+        :root {
+            --bg: #050505;
+            --text: #ffffff;
+            --card: rgba(255, 255, 255, 0.03);
+            --accent: #3b82f6;
+        }
+
+        .light-mode {
+            --bg: #f8fafc;
+            --text: #0f172a;
+            --card: rgba(0, 0, 0, 0.05);
+            --accent: #2563eb;
+        }
+
         body {
-            background-color: #000;
-            color: #fff;
-            font-family: 'Outfit', sans-serif;
-            overflow-x: hidden;
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            transition: all 0.5s ease;
+            margin: 0;
         }
 
-        /* Arka Plan Hareketli Gradyan */
-        .animated-bg {
+        /* Arka Plan Efekti */
+        .blur-blob {
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at 20% 30%, #0a2e2a 0%, #000 50%),
-                        radial-gradient(circle at 80% 70%, #051c2c 0%, #000 50%);
+            width: 500px;
+            height: 500px;
+            background: var(--accent);
+            filter: blur(150px);
+            opacity: 0.15;
             z-index: -1;
-            filter: blur(80px);
+            border-radius: 50%;
         }
 
-        /* Kart Tasarımı */
+        /* Modern Kart */
+        .app-container {
+            perspective: 1000px;
+        }
+
         .app-card {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(20px);
+            background: var(--card);
+            backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 50px;
-            padding: 40px;
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            position: relative;
-            overflow: hidden;
+            border-radius: 40px;
+            padding: 2.5rem;
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
         }
 
         .app-card:hover {
-            transform: scale(1.05) translateY(-20px);
-            border-color: rgba(255, 255, 255, 0.4);
-            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+            transform: translateY(-15px) rotateX(5deg);
+            border-color: var(--accent);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.3);
         }
 
-        /* Neon Glow Efektleri */
-        .mikat-glow:hover { box-shadow: 0 0 40px rgba(212, 175, 55, 0.2); border-color: #D4AF37; }
-        .pawpal-glow:hover { box-shadow: 0 0 40px rgba(16, 185, 129, 0.2); border-color: #10b981; }
-        .inver-glow:hover { box-shadow: 0 0 40px rgba(59, 130, 246, 0.2); border-color: #3b82f6; }
-
-        .btn-visit {
-            background: white;
-            color: black;
-            padding: 12px 30px;
-            border-radius: 100px;
-            font-weight: 700;
-            display: inline-flex;
+        .theme-toggle {
+            cursor: pointer;
+            width: 50px;
+            height: 50px;
+            border-radius: 15px;
+            display: flex;
             align-items: center;
-            gap: 10px;
-            transition: 0.3s;
+            justify-content: center;
+            background: var(--card);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .btn-visit:hover {
-            background: #D4AF37;
-            color: white;
-            transform: scale(1.1);
-        }
-
-        .section-title {
-            font-size: clamp(3rem, 10vw, 8rem);
-            font-weight: 900;
-            line-height: 0.8;
-            letter-spacing: -4px;
-            background: linear-gradient(to bottom, #fff, #333);
+        .logo-text {
+            font-weight: 800;
+            letter-spacing: -2px;
+            background: linear-gradient(to right, var(--text), var(--accent));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
+
+        .btn-gradient {
+            background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%);
+            color: white;
+            padding: 1rem 2.5rem;
+            border-radius: 20px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+        .btn-gradient:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4);
+        }
     </style>
 </head>
-<body class="antialiased">
+<body>
 
-    <div class="animated-bg"></div>
+    <div class="blur-blob top-0 left-0"></div>
+    <div class="blur-blob bottom-0 right-0"></div>
 
-    <main class="container mx-auto px-6 py-20">
+    <nav class="p-8 flex justify-between items-center max-w-7xl mx-auto">
+        <div class="text-3xl logo-text">Dev/ByAltun</div>
+        <div class="theme-toggle" onclick="document.body.classList.toggle('light-mode')">
+            <i class="fas fa-circle-half-stroke"></i>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-6 py-12">
         
-        <header class="mb-32">
-            <p class="text-xs tracking-[10px] uppercase opacity-40 mb-4">ALTUN DEV STUDIO</p>
-            <h1 class="section-title">THE NEXT<br>LEVEL APPS</h1>
+        <header class="mb-32 text-center md:text-left">
+            <h1 class="text-6xl md:text-9xl font-extrabold leading-none mb-6">
+                CRAFTING <br> <span class="opacity-30">DIGITAL</span> IDEAS
+            </h1>
+            <p class="text-xl opacity-50 max-w-2xl leading-relaxed">
+                Modern, kullanıcı odaklı ve yüksek performanslı mobil uygulamalar. 
+                Fikirleri somut ve etkileyici deneyimlere dönüştürüyoruz.
+            </p>
         </header>
 
-        <div class="grid lg:grid-cols-1 gap-12">
+        <div class="grid lg:grid-cols-2 gap-8 app-container">
 
-            <div class="app-card mikat-glow flex flex-col md:flex-row items-center gap-10">
-                <div class="w-32 h-32 md:w-48 md:h-48 rounded-[2.5rem] bg-[#D4AF37] flex items-center justify-center shadow-2xl shrink-0">
-                    <i class="fas fa-kaaba text-6xl md:text-8xl text-black"></i>
+            <div class="app-card group">
+                <div class="flex justify-between items-start mb-8">
+                    <div class="w-20 h-20 bg-[#D4AF37] rounded-3xl flex items-center justify-center shadow-lg group-hover:rotate-12 transition">
+                        <i class="fas fa-kaaba text-3xl text-black"></i>
+                    </div>
+                    <a href="https://byaltun4.github.io/mikat/index.html" target="_blank" class="text-4xl opacity-20 group-hover:opacity-100 transition"><i class="fas fa-arrow-up-right-from-square"></i></a>
                 </div>
-                <div class="flex-1 text-center md:text-left">
-                    <h2 class="text-4xl md:text-6xl font-black mb-4">MİKAT</h2>
-                    <p class="text-xl opacity-60 mb-8 max-w-2xl">Modern namaz vakitleri asistanı. Saf tasarım, en hassas hesaplamalar ve reklamsız deneyim ile maneviyatınız artık cebinizde.</p>
-                    <a href="https://byaltun4.github.io/mikat/index.html" target="_blank" class="btn-visit">
-                        SİTEYİ GÖR <i class="fas fa-external-link-alt"></i>
-                    </a>
+                <h3 class="text-4xl font-bold mb-4">Mikat</h3>
+                <p class="opacity-50 text-lg mb-8">Zamanın ötesinde, minimalist namaz vakitleri ve kıble rehberi. Saf odak, sıfır reklam.</p>
+                <div class="flex gap-2">
+                    <span class="px-4 py-1 bg-white/5 rounded-full text-xs">React Native</span>
+                    <span class="px-4 py-1 bg-white/5 rounded-full text-xs">Expo</span>
                 </div>
             </div>
 
-            <div class="app-card pawpal-glow flex flex-col md:flex-row-reverse items-center gap-10">
-                <div class="w-32 h-32 md:w-48 md:h-48 rounded-[2.5rem] bg-[#10b981] flex items-center justify-center shadow-2xl shrink-0">
-                    <i class="fas fa-paw text-6xl md:text-8xl text-white"></i>
+            <div class="app-card group" style="--accent: #10b981;">
+                <div class="flex justify-between items-start mb-8">
+                    <div class="w-20 h-20 bg-[#10b981] rounded-3xl flex items-center justify-center shadow-lg group-hover:rotate-12 transition text-white">
+                        <i class="fas fa-paw text-3xl"></i>
+                    </div>
+                    <a href="https://byaltun4.github.io/pawpal/" target="_blank" class="text-4xl opacity-20 group-hover:opacity-100 transition"><i class="fas fa-arrow-up-right-from-square"></i></a>
                 </div>
-                <div class="flex-1 text-center md:text-left">
-                    <h2 class="text-4xl md:text-6xl font-black mb-4">PAWPAL</h2>
-                    <p class="text-xl opacity-60 mb-8 max-w-2xl">Dostlarınız için akıllı takip sistemi. Bakım, sağlık ve aktivite yönetimini tek bir platformda birleştiren evcil hayvan asistanı.</p>
-                    <a href="https://byaltun4.github.io/pawpal/" target="_blank" class="btn-visit" style="background:#10b981; color:white">
-                        SİTEYİ GÖR <i class="fas fa-external-link-alt"></i>
-                    </a>
+                <h3 class="text-4xl font-bold mb-4">PawPal</h3>
+                <p class="opacity-50 text-lg mb-8">Tüylü dostlarınız için her şey tek bir yerde. Sağlık, beslenme ve aktivite takibinde yeni nesil çözüm.</p>
+                <div class="flex gap-2">
+                    <span class="px-4 py-1 bg-white/5 rounded-full text-xs">PetTech</span>
+                    <span class="px-4 py-1 bg-white/5 rounded-full text-xs">Firebase</span>
                 </div>
             </div>
 
-            <div class="app-card inver-glow flex flex-col md:flex-row items-center gap-10">
-                <div class="w-32 h-32 md:w-48 md:h-48 rounded-[2.5rem] bg-[#3b82f6] flex items-center justify-center shadow-2xl shrink-0">
-                    <i class="fas fa-faucet-drip text-6xl md:text-8xl text-white"></i>
-                </div>
-                <div class="flex-1 text-center md:text-left">
-                    <h2 class="text-4xl md:text-6xl font-black mb-4">İNVER WATER</h2>
-                    <p class="text-xl opacity-60 mb-8 max-w-2xl">Kyiv için vazgeçilmez bir yardımcı. Su kesintisi anlık bildirimleri ve döviz kurlarını tek dokunuşla takip edin.</p>
-                    <a href="https://inver2-ops.github.io/" target="_blank" class="btn-visit" style="background:#3b82f6; color:white">
-                        SİTEYİ GÖR <i class="fas fa-external-link-alt"></i>
-                    </a>
+            <div class="app-card group lg:col-span-2" style="--accent: #3b82f6;">
+                <div class="flex flex-col md:flex-row gap-10 items-center">
+                    <div class="w-32 h-32 bg-[#3b82f6] rounded-[2.5rem] flex items-center justify-center shadow-lg shrink-0 text-white">
+                        <i class="fas fa-faucet-drip text-5xl"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-4xl font-bold mb-4">İnver Water</h3>
+                        <p class="opacity-50 text-lg mb-8">Kyiv sakinleri için hayati önem taşıyan su kesintisi ve döviz takip platformu. Şehrin nabzını tutun.</p>
+                        <a href="https://inver2-ops.github.io/" target="_blank" class="btn-gradient inline-block">Proje Sayfasına Git</a>
+                    </div>
                 </div>
             </div>
 
         </div>
 
-        <footer class="mt-40 pt-20 border-t border-white/10 text-center">
-            <div class="flex justify-center gap-10 mb-10 text-2xl opacity-40">
-                <i class="fab fa-android hover:text-white transition"></i>
-                <i class="fab fa-apple hover:text-white transition"></i>
-                <i class="fas fa-code hover:text-white transition"></i>
+        <section class="mt-40 text-center py-20 bg-white/5 rounded-[4rem] border border-white/5 relative overflow-hidden">
+            <div class="relative z-10">
+                <h2 class="text-5xl md:text-7xl font-black mb-8">Let's Build Together</h2>
+                <p class="text-xl opacity-50 mb-12">Yeni bir proje veya fikir mi var? Hemen yazın.</p>
+                <a href="mailto:altun4@gmail.com" class="text-3xl md:text-5xl font-bold border-b-4 border-blue-600 hover:text-blue-600 transition">
+                    altun4@gmail.com
+                </a>
             </div>
-            <p class="text-sm opacity-20 uppercase tracking-[5px]">Kyiv, Ukraine &copy; 2026 ALTUN DEV LABS</p>
-        </footer>
+            <div class="absolute -bottom-20 -right-20 w-80 h-80 bg-blue-600/20 blur-[100px] rounded-full"></div>
+        </section>
 
     </main>
+
+    <footer class="py-20 text-center opacity-20 text-sm tracking-[5px] uppercase">
+        Design by Dev/ByAltun &copy; 2026
+    </footer>
 
 </body>
 </html>
