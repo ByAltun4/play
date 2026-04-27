@@ -1,7 +1,13 @@
 <!DOCTYPE html>
-<html>
+<html lang="tr">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Ücretsiz APK indir | BYALTUN</title>
+
+<meta name="description" content="En iyi ücretsiz APK indir, mod apk, oyunlar ve uygulamalar burada.">
+
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/vue@3"></script>
 </head>
@@ -10,43 +16,32 @@
 
 <div id="app">
 
-<!-- STORE -->
-<div v-if="view=='store'" class="p-4">
+<!-- HEADER -->
+<div class="p-4 flex justify-between">
+<h1>BYALTUN APK</h1>
+<input v-model="search" placeholder="APK ara..." class="text-black">
+</div>
 
-<div class="grid grid-cols-3 gap-4">
-<div v-for="a in apps" class="bg-gray-800 p-3 rounded cursor-pointer" @click="openApp(a)">
-<img :src="a.icon" class="w-16">
+<!-- APPS -->
+<div class="grid grid-cols-2 md:grid-cols-6 gap-3 p-4">
+<div v-for="a in filtered" class="bg-gray-800 p-3 rounded cursor-pointer" @click="open(a)">
+<img :src="a.icon" class="w-14">
 <p>{{a.name}}</p>
 </div>
 </div>
 
-</div>
-
 <!-- DETAIL -->
-<div v-if="view=='detail'" class="p-4">
+<div v-if="app" class="p-4">
+<h2>{{app.name}}</h2>
+<p>{{app.desc}}</p>
 
-<button @click="view='store'">← Geri</button>
+<button @click="download(app)" class="bg-green-500 px-3 py-1">İndir</button>
 
-<h1 class="text-2xl">{{selected.name}}</h1>
-<img :src="selected.icon" class="w-20">
+<h3>Yorumlar</h3>
+<div v-for="c in appComments">{{c.text}}</div>
 
-<p>{{selected.desc}}</p>
-
-<p>İndirme: {{selected.downloads}}</p>
-<p>Görüntülenme: {{selected.views}}</p>
-
-<button @click="download(selected)" class="bg-green-500 px-3 py-1">İndir</button>
-
-<!-- COMMENT -->
-<h2 class="mt-4">Yorumlar</h2>
-
-<div v-for="c in appComments">
-<p>{{c.text}}</p>
-</div>
-
-<input v-model="comment" placeholder="Yorum yaz">
+<input v-model="comment">
 <button @click="sendComment">Gönder</button>
-
 </div>
 
 </div>
@@ -59,11 +54,11 @@ setup(){
 
 const API="https://byaltunstore.byaltun4.workers.dev";
 
-const view=ref("store");
 const apps=ref([]);
-const selected=ref(null);
 const comments=ref([]);
+const app=ref(null);
 const comment=ref("");
+const search=ref("");
 
 const sync=async()=>{
 const r=await fetch(API+"/sync");
@@ -72,32 +67,31 @@ apps.value=d.apps;
 comments.value=d.comments;
 };
 
-const openApp=async(a)=>{
-selected.value=a;
-view.value="detail";
-
-await fetch(API+"/view",{method:"POST",body:JSON.stringify({id:a.id})});
+const open=async(a)=>{
+app.value=a;
+await fetch(API+"/track",{method:"POST",body:JSON.stringify({id:a.id,type:"view"})});
 };
 
 const download=async(a)=>{
-await fetch(API+"/download",{method:"POST",body:JSON.stringify({id:a.id})});
+await fetch(API+"/track",{method:"POST",body:JSON.stringify({id:a.id,type:"download"})});
 window.open(a.apkUrl);
 };
 
 const sendComment=async()=>{
 await fetch(API+"/comment",{method:"POST",body:JSON.stringify({
-appId:selected.value.id,
-text:comment.value
+appId:app.value.id,text:comment.value
 })});
 comment.value="";
 sync();
 };
 
-const appComments=computed(()=>comments.value.filter(c=>c.appId==selected.value?.id));
+const appComments=computed(()=>comments.value.filter(c=>c.appId==app.value?.id));
+
+const filtered=computed(()=>apps.value.filter(a=>a.name.toLowerCase().includes(search.value.toLowerCase())));
 
 onMounted(sync);
 
-return{apps,view,selected,openApp,download,comments,comment,sendComment,appComments};
+return{apps,app,open,download,comment,sendComment,appComments,search,filtered};
 }
 }).mount("#app");
 </script>
