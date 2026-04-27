@@ -3,188 +3,239 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dev / ByAltun | Premium Showcase</title>
+    <title>Dev/ByAltun | Global App Studio</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;400;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap');
         
-        :root {
-            --bg: #050505;
-            --text: #ffffff;
-            --card: rgba(255, 255, 255, 0.03);
-            --accent: #3b82f6;
-        }
-
-        .light-mode {
-            --bg: #f8fafc;
-            --text: #0f172a;
-            --card: rgba(0, 0, 0, 0.05);
-            --accent: #2563eb;
-        }
-
         body {
-            background-color: var(--bg);
-            color: var(--text);
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            transition: all 0.5s ease;
-            margin: 0;
+            background-color: #030712;
+            color: #f8fafc;
+            font-family: 'Space Grotesk', sans-serif;
+            overflow-x: hidden;
         }
 
-        /* Arka Plan Efekti */
-        .blur-blob {
-            position: fixed;
-            width: 500px;
-            height: 500px;
-            background: var(--accent);
-            filter: blur(150px);
-            opacity: 0.15;
-            z-index: -1;
-            border-radius: 50%;
-        }
-
-        /* Modern Kart */
-        .app-container {
-            perspective: 1000px;
-        }
-
-        .app-card {
-            background: var(--card);
-            backdrop-filter: blur(15px);
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 40px;
-            padding: 2.5rem;
-            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            transition: all 0.4s ease;
         }
 
-        .app-card:hover {
-            transform: translateY(-15px) rotateX(5deg);
-            border-color: var(--accent);
-            box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+        .glass:hover {
+            background: rgba(255, 255, 255, 0.07);
+            border-color: #6366f1;
+            transform: translateY(-10px) scale(1.02);
         }
 
-        .theme-toggle {
-            cursor: pointer;
-            width: 50px;
-            height: 50px;
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--card);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .logo-text {
-            font-weight: 800;
-            letter-spacing: -2px;
-            background: linear-gradient(to right, var(--text), var(--accent));
+        .gradient-text {
+            background: linear-gradient(135deg, #fff 30%, #6366f1 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        .btn-gradient {
-            background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%);
-            color: white;
-            padding: 1rem 2.5rem;
-            border-radius: 20px;
-            font-weight: 700;
-            transition: all 0.3s ease;
+        .lang-btn {
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 8px;
+            transition: 0.3s;
+            opacity: 0.5;
         }
 
-        .btn-gradient:hover {
-            transform: scale(1.05);
-            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4);
+        .lang-btn.active {
+            opacity: 1;
+            background: rgba(99, 102, 241, 0.2);
+            border: 1px solid #6366f1;
+        }
+
+        #bg-canvas {
+            position: fixed;
+            top: 0; left: 0; z-index: -1;
         }
     </style>
 </head>
 <body>
+    <canvas id="bg-canvas"></canvas>
 
-    <div class="blur-blob top-0 left-0"></div>
-    <div class="blur-blob bottom-0 right-0"></div>
+    <div id="app" v-cloak>
+        <nav class="flex justify-between items-center p-6 max-w-7xl mx-auto">
+            <div class="text-2xl font-bold tracking-tighter gradient-text underline decoration-indigo-500">Dev/ByAltun</div>
+            <div class="flex gap-2 glass p-2 rounded-xl">
+                <span v-for="(l, code) in languages" :key="code" @click="currentLang = code" 
+                      class="lang-btn flex items-center gap-1 text-sm" :class="{active: currentLang === code}">
+                    <span>{{ l.flag }}</span> {{ code.toUpperCase() }}
+                </span>
+            </div>
+        </nav>
 
-    <nav class="p-8 flex justify-between items-center max-w-7xl mx-auto">
-        <div class="text-3xl logo-text">Dev/ByAltun</div>
-        <div class="theme-toggle" onclick="document.body.classList.toggle('light-mode')">
-            <i class="fas fa-circle-half-stroke"></i>
-        </div>
-    </nav>
-
-    <main class="max-w-7xl mx-auto px-6 py-12">
-        
-        <header class="mb-32 text-center md:text-left">
-            <h1 class="text-6xl md:text-9xl font-extrabold leading-none mb-6">
-                CRAFTING <br> <span class="opacity-30">DIGITAL</span> IDEAS
+        <header class="py-20 px-6 text-center">
+            <h1 class="text-6xl md:text-8xl font-bold mb-6 gradient-text uppercase tracking-tighter">
+                {{ t.heroTitle }}
             </h1>
-            <p class="text-xl opacity-50 max-w-2xl leading-relaxed">
-                Modern, kullanıcı odaklı ve yüksek performanslı mobil uygulamalar. 
-                Fikirleri somut ve etkileyici deneyimlere dönüştürüyoruz.
-            </p>
+            <p class="text-xl opacity-60 max-w-2xl mx-auto">{{ t.heroSub }}</p>
         </header>
 
-        <div class="grid lg:grid-cols-2 gap-8 app-container">
-
-            <div class="app-card group">
-                <div class="flex justify-between items-start mb-8">
-                    <div class="w-20 h-20 bg-[#D4AF37] rounded-3xl flex items-center justify-center shadow-lg group-hover:rotate-12 transition">
-                        <i class="fas fa-kaaba text-3xl text-black"></i>
-                    </div>
-                    <a href="https://byaltun4.github.io/mikat/index.html" target="_blank" class="text-4xl opacity-20 group-hover:opacity-100 transition"><i class="fas fa-arrow-up-right-from-square"></i></a>
+        <main class="max-w-7xl mx-auto grid md:grid-cols-3 gap-8 px-6 pb-20">
+            <div class="glass p-8 rounded-[2rem] flex flex-col h-full">
+                <div class="w-16 h-16 bg-amber-500 rounded-2xl flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(245,158,11,0.3)]">
+                    <i class="fas fa-kaaba text-2xl text-black"></i>
                 </div>
-                <h3 class="text-4xl font-bold mb-4">Mikat</h3>
-                <p class="opacity-50 text-lg mb-8">Zamanın ötesinde, minimalist namaz vakitleri ve kıble rehberi. Saf odak, sıfır reklam.</p>
-                <div class="flex gap-2">
-                    <span class="px-4 py-1 bg-white/5 rounded-full text-xs">React Native</span>
-                    <span class="px-4 py-1 bg-white/5 rounded-full text-xs">Expo</span>
-                </div>
-            </div>
-
-            <div class="app-card group" style="--accent: #10b981;">
-                <div class="flex justify-between items-start mb-8">
-                    <div class="w-20 h-20 bg-[#10b981] rounded-3xl flex items-center justify-center shadow-lg group-hover:rotate-12 transition text-white">
-                        <i class="fas fa-paw text-3xl"></i>
-                    </div>
-                    <a href="https://byaltun4.github.io/pawpal/" target="_blank" class="text-4xl opacity-20 group-hover:opacity-100 transition"><i class="fas fa-arrow-up-right-from-square"></i></a>
-                </div>
-                <h3 class="text-4xl font-bold mb-4">PawPal</h3>
-                <p class="opacity-50 text-lg mb-8">Tüylü dostlarınız için her şey tek bir yerde. Sağlık, beslenme ve aktivite takibinde yeni nesil çözüm.</p>
-                <div class="flex gap-2">
-                    <span class="px-4 py-1 bg-white/5 rounded-full text-xs">PetTech</span>
-                    <span class="px-4 py-1 bg-white/5 rounded-full text-xs">Firebase</span>
-                </div>
-            </div>
-
-            <div class="app-card group lg:col-span-2" style="--accent: #3b82f6;">
-                <div class="flex flex-col md:flex-row gap-10 items-center">
-                    <div class="w-32 h-32 bg-[#3b82f6] rounded-[2.5rem] flex items-center justify-center shadow-lg shrink-0 text-white">
-                        <i class="fas fa-faucet-drip text-5xl"></i>
-                    </div>
-                    <div class="flex-1">
-                        <h3 class="text-4xl font-bold mb-4">İnver Water</h3>
-                        <p class="opacity-50 text-lg mb-8">Kyiv sakinleri için hayati önem taşıyan su kesintisi ve döviz takip platformu. Şehrin nabzını tutun.</p>
-                        <a href="https://inver2-ops.github.io/" target="_blank" class="btn-gradient inline-block">Proje Sayfasına Git</a>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-        <section class="mt-40 text-center py-20 bg-white/5 rounded-[4rem] border border-white/5 relative overflow-hidden">
-            <div class="relative z-10">
-                <h2 class="text-5xl md:text-7xl font-black mb-8">Let's Build Together</h2>
-                <p class="text-xl opacity-50 mb-12">Yeni bir proje veya fikir mi var? Hemen yazın.</p>
-                <a href="mailto:altun4@gmail.com" class="text-3xl md:text-5xl font-bold border-b-4 border-blue-600 hover:text-blue-600 transition">
-                    altun4@gmail.com
+                <h3 class="text-3xl font-bold mb-4">Mikat</h3>
+                <p class="opacity-50 mb-8 flex-grow">{{ t.mikatDesc }}</p>
+                <a href="https://byaltun4.github.io/mikat/index.html" target="_blank" 
+                   class="bg-white text-black font-bold py-3 px-6 rounded-xl text-center hover:bg-indigo-500 hover:text-white transition">
+                   {{ t.btnVisit }}
                 </a>
             </div>
-            <div class="absolute -bottom-20 -right-20 w-80 h-80 bg-blue-600/20 blur-[100px] rounded-full"></div>
-        </section>
 
-    </main>
+            <div class="glass p-8 rounded-[2rem] flex flex-col h-full">
+                <div class="w-16 h-16 bg-emerald-500 rounded-2xl flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(16,185,129,0.3)]">
+                    <i class="fas fa-paw text-2xl text-white"></i>
+                </div>
+                <h3 class="text-3xl font-bold mb-4">PawPal</h3>
+                <p class="opacity-50 mb-8 flex-grow">{{ t.pawpalDesc }}</p>
+                <a href="https://byaltun4.github.io/pawpal/" target="_blank" 
+                   class="bg-white text-black font-bold py-3 px-6 rounded-xl text-center hover:bg-indigo-500 hover:text-white transition">
+                   {{ t.btnVisit }}
+                </a>
+            </div>
 
-    <footer class="py-20 text-center opacity-20 text-sm tracking-[5px] uppercase">
-        Design by Dev/ByAltun &copy; 2026
-    </footer>
+            <div class="glass p-8 rounded-[2rem] flex flex-col h-full border-indigo-500/30 border-2">
+                <div class="w-16 h-16 bg-blue-500 rounded-2xl flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(59,130,246,0.3)]">
+                    <i class="fas fa-faucet-drip text-2xl text-white"></i>
+                </div>
+                <h3 class="text-3xl font-bold mb-4">Inver Water</h3>
+                <p class="opacity-50 mb-8 flex-grow">{{ t.inverDesc }}</p>
+                <a href="https://inver2-ops.github.io/" target="_blank" 
+                   class="bg-blue-600 text-white font-bold py-3 px-6 rounded-xl text-center hover:bg-white hover:text-black transition">
+                   {{ t.btnVisit }}
+                </a>
+            </div>
+        </main>
 
+        <footer class="glass mt-20 p-12 text-center rounded-t-[3rem]">
+            <h2 class="text-4xl font-bold mb-6">{{ t.contactTitle }}</h2>
+            <a href="mailto:altun4@gmail.com" class="text-2xl md:text-4xl font-bold text-indigo-400 hover:text-white transition underline">
+                altun4@gmail.com
+            </a>
+            <div class="mt-12 opacity-20 text-xs tracking-widest uppercase">
+                &copy; 2026 Kyiv, Ukraine | Developed by Hasan Altunufağı
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        const { createApp, computed, ref } = Vue;
+
+        createApp({
+            setup() {
+                const currentLang = ref('tr');
+                const languages = {
+                    tr: { 
+                        flag: '🇹🇷',
+                        heroTitle: 'GELECEĞİ KODLUYORUZ',
+                        heroSub: 'Mobil dünyada inovasyon ve estetiğin buluştuğu nokta.',
+                        mikatDesc: 'Minimalist tasarım ve yüksek hassasiyetli namaz vakitleri asistanı.',
+                        pawpalDesc: 'Evcil hayvanlarınızın sağlığı ve bakımı için akıllı takip sistemi.',
+                        inverDesc: 'Kyiv için anlık su kesintisi takibi ve finansal veriler.',
+                        btnVisit: 'SİTEYİ GÖR',
+                        contactTitle: 'BİZİMLE İLETİŞİME GEÇİN'
+                    },
+                    en: { 
+                        flag: '🇺🇸',
+                        heroTitle: 'CODING THE FUTURE',
+                        heroSub: 'Where innovation meets aesthetics in the mobile world.',
+                        mikatDesc: 'Minimalist design and high-precision prayer times assistant.',
+                        pawpalDesc: 'Smart tracking system for your pets health and care.',
+                        inverDesc: 'Real-time water outage tracking and financial data for Kyiv.',
+                        btnVisit: 'VIEW SITE',
+                        contactTitle: 'GET IN TOUCH'
+                    },
+                    ua: { 
+                        flag: '🇺🇦',
+                        heroTitle: 'КОДУЄМО МАЙБУТНЄ',
+                        heroSub: 'Там, де інновації зустрічаються з естетикою в мобільному світі.',
+                        mikatDesc: 'Мінімалістичний дизайн і високоточний помічник часу молитов.',
+                        pawpalDesc: 'Розумна система відстеження здоров’я та догляду за тваринами.',
+                        inverDesc: 'Відстеження відключень води та фінансові дані Києва в реальному часі.',
+                        btnVisit: 'ВІДКРИТИ',
+                        contactTitle: 'ЗВ’ЯЖІТЬСЯ З НАМИ'
+                    },
+                    ru: { 
+                        flag: '🇷🇺',
+                        heroTitle: 'КОДИРУЕМ БУДУЩЕЕ',
+                        heroSub: 'Где инновации встречаются с эстетикой в мобильном мире.',
+                        mikatDesc: 'Минималистичный дизайн и высокоточный помощник времени молитв.',
+                        pawpalDesc: 'Умная система отслеживания здоровья и ухода за питомцами.',
+                        inverDesc: 'Отслеживание отключений воды и финансовые данные Киева в реальном времени.',
+                        btnVisit: 'ОТКРЫТЬ',
+                        contactTitle: 'СВЯЖИТЕСЬ С НАМИ'
+                    }
+                };
+
+                const t = computed(() => languages[currentLang.value]);
+
+                return { currentLang, languages, t };
+            }
+        }).mount('#app');
+
+        // Arka Plan Animasyonu (Matrix/Network Effect)
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let dots = [];
+        const dotCount = 100;
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Dot {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+            }
+            update() {
+                this.x += this.vx; this.y += this.vy;
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 1.5, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(99, 102, 241, 0.3)';
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < dotCount; i++) dots.push(new Dot());
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            dots.forEach(dot => {
+                dot.update();
+                dot.draw();
+                dots.forEach(other => {
+                    let dx = dot.x - other.x, dy = dot.y - other.y;
+                    let dist = Math.sqrt(dx*dx + dy*dy);
+                    if (dist < 150) {
+                        ctx.beginPath();
+                        ctx.moveTo(dot.x, dot.y);
+                        ctx.lineTo(other.x, other.y);
+                        ctx.strokeStyle = `rgba(99, 102, 241, ${0.15 - dist/1000})`;
+                        ctx.stroke();
+                    }
+                });
+            });
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
 </body>
 </html>
