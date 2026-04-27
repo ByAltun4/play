@@ -3,176 +3,239 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ByAltun | Digital Force Kyiv</title>
+    <title>ByAltun Store | Next-Gen App Marketplace</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Space+Grotesk:wght@300;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;500;700;800&display=swap');
         
-        body { background: #050505; color: #fff; font-family: 'Space Grotesk', sans-serif; overflow-x: hidden; }
-        .font-sync { font-family: 'Syncopate', sans-serif; }
+        :root { --brand: #6366f1; --bg: #0b0e14; --card: #161b22; }
+        body { background: var(--bg); color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }
 
-        /* Arka Plan Hareketli Izgara */
-        .bg-grid {
-            position: fixed; inset: 0;
-            background-image: linear-gradient(rgba(99, 102, 241, 0.05) 1px, transparent 1px), 
-                              linear-gradient(90deg, rgba(99, 102, 241, 0.05) 1px, transparent 1px);
-            background-size: 50px 50px; z-index: -1; transform: perspective(500px) rotateX(60deg);
-            transform-origin: center top; animation: grid-move 20s linear infinite;
-        }
-        @keyframes grid-move { from { background-position: 0 0; } to { background-position: 0 1000px; } }
-
-        .glass-card {
-            background: rgba(15, 15, 15, 0.7);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.5s ease;
-        }
-        .glass-card:hover { border-color: #6366f1; box-shadow: 0 0 30px rgba(99, 102, 241, 0.2); transform: translateY(-5px); }
-
-        .neon-glow { text-shadow: 0 0 10px rgba(99, 102, 241, 0.8); }
-        .gradient-border { border-image: linear-gradient(to right, #6366f1, #a855f7) 1; }
+        /* Store Header Style */
+        .store-nav { background: rgba(11, 14, 20, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.05); }
         
+        /* App Card Hover */
+        .app-card {
+            background: var(--card);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 24px;
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .app-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--brand);
+            background: #1c2128;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        /* Category Pill */
+        .pill { 
+            padding: 8px 20px; border-radius: 100px; font-size: 12px; font-weight: 700;
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer; transition: 0.3s;
+        }
+        .pill.active { background: var(--brand); border-color: var(--brand); color: white; }
+
+        /* Featured Banner */
+        .featured-banner {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            border-radius: 40px; overflow: hidden; position: relative;
+        }
+
+        .verified-badge { color: #38bdf8; font-size: 14px; }
+
         [v-cloak] { display: none; }
     </style>
 </head>
 <body>
-    <div class="bg-grid"></div>
 
     <div id="app" v-cloak>
-        <nav class="fixed top-0 w-full z-50 p-6 flex justify-between items-center bg-black/50 backdrop-blur-md border-b border-white/5">
-            <div class="flex items-center gap-4">
-                <div class="text-2xl font-bold font-sync neon-glow">BYALTUN</div>
-                <div class="h-6 w-[1px] bg-white/20"></div>
-                <div class="text-[10px] font-mono opacity-60">SYSTEM_v5.2 // KYIV_NODE</div>
-            </div>
-
-            <div class="flex items-center gap-6">
-                <div class="hidden lg:flex items-center gap-4 glass-card px-4 py-2 rounded-full text-[10px] font-bold">
-                    <span class="text-indigo-500">LIVE: {{ currentTime }}</span>
-                    <span>{{ city.toUpperCase() }} / {{ temp }}°C / {{ weatherDesc }}</span>
+        <nav class="store-nav fixed top-0 w-full z-50 p-4">
+            <div class="max-w-7xl mx-auto flex justify-between items-center px-4">
+                <div class="flex items-center gap-8">
+                    <div class="text-2xl font-extrabold tracking-tighter flex items-center gap-2">
+                        <i class="fas fa-cubes text-indigo-500"></i> BYALTUN <span class="font-light opacity-50">STORE</span>
+                    </div>
+                    <div class="hidden lg:flex gap-6 text-sm font-medium opacity-60">
+                        <a href="#" class="hover:opacity-100 transition">Uygulamalar</a>
+                        <a href="#" class="hover:opacity-100 transition">Oyunlar</a>
+                        <a href="#" class="hover:opacity-100 transition">Yayınla</a>
+                    </div>
                 </div>
-                <div class="flex gap-2 bg-white/5 p-1 rounded-xl">
-                    <button v-for="(l, code) in languages" @click="currentLang = code" 
-                            class="px-3 py-1 rounded-lg text-[10px] font-bold transition uppercase"
-                            :class="currentLang === code ? 'bg-indigo-600' : 'opacity-40 hover:opacity-100'">
-                        <img :src="l.flag" class="w-4 h-2.5 inline-block mr-1 rounded-sm"> {{ code }}
-                    </button>
+
+                <div class="flex items-center gap-4">
+                    <div class="hidden md:flex bg-white/5 px-4 py-2 rounded-xl items-center gap-3 border border-white/10">
+                        <i class="fas fa-search opacity-30"></i>
+                        <input type="text" placeholder="Uygulama ara..." class="bg-transparent border-none outline-none text-xs w-48">
+                    </div>
+                    <select v-model="currentLang" class="bg-white/5 text-[10px] p-2 rounded-lg border border-white/10 outline-none">
+                        <option value="tr">TR</option>
+                        <option value="en">EN</option>
+                        <option value="ua">UA</option>
+                    </select>
                 </div>
             </div>
         </nav>
 
-        <header class="min-h-screen flex flex-col justify-center items-center text-center px-6 relative overflow-hidden">
-            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+        <main class="max-w-7xl mx-auto px-6 pt-32 pb-20">
             
-            <h2 class="text-xs tracking-[15px] uppercase opacity-40 mb-6 font-sync">{{ t.status }}</h2>
-            <h1 class="text-[10vw] font-bold leading-none font-sync tracking-tighter mb-10">
-                BUILDING<br><span class="text-indigo-600">THE CORE.</span>
-            </h1>
-            <p class="text-lg md:text-2xl max-w-3xl opacity-60 leading-relaxed italic">
-                "{{ t.heroSub }}"
-            </p>
-        </header>
-
-        <main class="max-w-[1600px] mx-auto px-6 py-20 grid grid-cols-1 md:grid-cols-12 gap-8">
-            
-            <div class="md:col-span-7 glass-card p-12 rounded-[3rem] relative overflow-hidden group">
-                <div class="absolute -right-20 -top-20 text-[20rem] font-bold opacity-[0.03] italic">01</div>
-                <div class="flex flex-col md:flex-row gap-10 items-center">
-                    <div class="w-48 h-48 bg-amber-500 rounded-[2.5rem] flex items-center justify-center shadow-[0_0_50px_rgba(245,158,11,0.2)] shrink-0 group-hover:scale-110 transition duration-700">
-                        <i class="fas fa-kaaba text-[6rem] text-black"></i>
+            <section class="mb-16">
+                <div class="featured-banner p-10 lg:p-20 flex flex-col lg:flex-row items-center justify-between gap-10">
+                    <div class="max-w-xl text-center lg:text-left">
+                        <span class="bg-white/20 px-4 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest mb-6 inline-block">Haftanın Uygulaması</span>
+                        <h1 class="text-5xl lg:text-7xl font-extrabold mb-6 leading-none tracking-tighter">MİKAT: Spiritual Guide</h1>
+                        <p class="text-lg opacity-80 mb-10">{{ languages[currentLang].mikatShort }}</p>
+                        <div class="flex flex-wrap justify-center lg:justify-start gap-4">
+                            <a :href="apps[0].link" class="bg-white text-black px-8 py-4 rounded-2xl font-bold flex items-center gap-3 hover:scale-105 transition">
+                                <i class="fab fa-google-play"></i> Hemen İndir
+                            </a>
+                            <div class="flex items-center gap-2 text-sm font-bold bg-black/20 px-6 py-4 rounded-2xl">
+                                <i class="fas fa-star text-yellow-400"></i> 4.9 Derecelendirme
+                            </div>
+                        </div>
                     </div>
-                    <div class="flex-1">
-                        <h3 class="text-5xl font-bold mb-4 font-sync italic">MİKAT</h3>
-                        <p class="text-lg opacity-50 mb-8">{{ t.mikatDesc }}</p>
-                        <a href="https://byaltun4.github.io/mikat/index.html" class="inline-block px-10 py-4 border-2 border-amber-500 text-amber-500 font-bold rounded-full hover:bg-amber-500 hover:text-black transition uppercase text-xs tracking-widest">{{ t.btn }}</a>
+                    <div class="relative">
+                        <div class="w-64 h-64 bg-white/10 rounded-[4rem] backdrop-blur-3xl flex items-center justify-center rotate-12 border border-white/20">
+                            <i class="fas fa-kaaba text-[8rem] text-white/90"></i>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <div class="md:col-span-5 glass-card p-10 rounded-[3rem] border-indigo-500/20 flex flex-col justify-center">
-                <h4 class="text-xs tracking-[5px] uppercase opacity-30 mb-6">Tech Stack</h4>
-                <div class="grid grid-cols-2 gap-4">
-                    <div v-for="tech in ['React Native', 'Expo', 'GSAP', 'Firebase', 'Tailwind', 'EAS Build']" 
-                         class="bg-white/5 p-3 rounded-xl border border-white/5 text-[10px] font-bold uppercase tracking-widest text-center">
-                        {{ tech }}
+            <section class="flex gap-3 mb-10 overflow-x-auto pb-4 no-scrollbar">
+                <div v-for="cat in categories" 
+                     @click="activeCategory = cat"
+                     :class="['pill', activeCategory === cat ? 'active' : '']">
+                    {{ cat }}
+                </div>
+            </section>
+
+            <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div v-for="app in filteredApps" :key="app.name" class="app-card p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-start mb-6">
+                            <div :class="['w-20 h-20 rounded-3xl flex items-center justify-center shadow-2xl', app.color]">
+                                <i :class="['fas text-4xl', app.icon]"></i>
+                            </div>
+                            <div class="flex gap-2">
+                                <span class="text-[10px] bg-white/5 px-2 py-1 rounded-md opacity-50 uppercase">{{ app.version }}</span>
+                                <i class="fas fa-check-circle verified-badge" title="Verified by ByAltun"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-2xl font-extrabold mb-2">{{ app.name }}</h3>
+                        <p class="text-sm opacity-40 mb-6 leading-relaxed line-clamp-3">
+                            {{ app.desc[currentLang] }}
+                        </p>
+                    </div>
+                    
+                    <div class="flex items-center justify-between mt-4 pt-6 border-t border-white/5">
+                        <div class="flex flex-col">
+                            <span class="text-[10px] opacity-30 uppercase tracking-widest">Geliştirici</span>
+                            <span class="text-xs font-bold">{{ app.developer }}</span>
+                        </div>
+                        <a :href="app.link" class="bg-indigo-600/10 text-indigo-400 px-6 py-2 rounded-xl text-xs font-bold hover:bg-indigo-600 hover:text-white transition">
+                            YÜKLE
+                        </a>
                     </div>
                 </div>
-            </div>
 
-            <div class="md:col-span-4 glass-card p-10 rounded-[3rem] border-emerald-500/20 group">
-                <div class="w-16 h-16 bg-emerald-500 rounded-2xl flex items-center justify-center mb-10 shadow-lg shadow-emerald-500/20">
-                    <i class="fas fa-paw text-3xl text-white"></i>
+                <div class="border-2 border-dashed border-white/10 rounded-[24px] p-8 flex flex-col items-center justify-center text-center group hover:border-indigo-500/50 transition cursor-pointer">
+                    <div class="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition">
+                        <i class="fas fa-plus opacity-30"></i>
+                    </div>
+                    <h4 class="font-bold opacity-60">Kendi APK'nı Yayınla</h4>
+                    <p class="text-xs opacity-30 mt-2">ByAltun ekosistemine katıl ve uygulamanı binlerce kişiye tanıt.</p>
                 </div>
-                <h3 class="text-3xl font-bold mb-4 font-sync">PAWPAL</h3>
-                <p class="opacity-40 text-sm leading-relaxed mb-10">{{ t.pawpalDesc }}</p>
-                <a href="https://byaltun4.github.io/pawpal/" class="block w-full py-4 text-center border border-white/10 rounded-2xl hover:bg-emerald-500 hover:border-emerald-500 transition font-bold uppercase text-[10px]">{{ t.btn }}</a>
-            </div>
-
-            <div class="md:col-span-8 glass-card p-10 rounded-[3rem] border-blue-500/20 flex flex-col md:flex-row gap-10 items-center bg-gradient-to-br from-blue-600/5 to-transparent">
-                <div class="w-32 h-32 bg-blue-600 rounded-[2rem] flex items-center justify-center shadow-xl shrink-0">
-                    <i class="fas fa-droplet text-5xl text-white"></i>
-                </div>
-                <div class="flex-1">
-                    <h3 class="text-4xl font-bold mb-4 font-sync uppercase">INVER WATER</h3>
-                    <p class="opacity-40 text-sm leading-relaxed mb-6">{{ t.inverDesc }}</p>
-                    <a href="https://inver2-ops.github.io/" class="inline-block px-8 py-3 bg-blue-600 rounded-xl font-bold text-xs uppercase tracking-widest hover:shadow-[0_0_30px_rgba(37,99,235,0.4)] transition">{{ t.btn }}</a>
-                </div>
-            </div>
-
+            </section>
         </main>
 
-        <footer class="py-40 px-6">
-            <div class="max-w-5xl mx-auto glass-card p-12 lg:p-24 rounded-[4rem] border-indigo-500/30 text-center relative overflow-hidden">
-                <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
-                <h2 class="text-4xl md:text-6xl font-bold mb-12 font-sync italic uppercase tracking-tighter">{{ t.contactTitle }}</h2>
-                <a href="mailto:altun4@gmail.com" class="text-2xl md:text-5xl font-bold text-indigo-500 hover:text-white transition break-all underline decoration-1 underline-offset-8">
-                    altun4@gmail.com
-                </a>
-            </div>
-            <div class="mt-20 text-center opacity-20 text-[9px] tracking-[10px] font-black uppercase">
-                Designed & Developed by BYALTUN LABS // KYIV 2026
+        <footer class="bg-black/40 border-t border-white/5 py-20 px-6">
+            <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-10">
+                <div>
+                    <div class="text-xl font-black mb-4 tracking-tighter">BYALTUN STORE</div>
+                    <p class="text-xs opacity-30 max-w-xs">Bağımsız geliştiriciler için modern ve güvenli uygulama dağıtım platformu.</p>
+                </div>
+                <div class="flex gap-10 text-xs font-bold opacity-40 uppercase tracking-widest">
+                    <a href="#" class="hover:text-indigo-500 transition">Gizlilik</a>
+                    <a href="#" class="hover:text-indigo-500 transition">Geliştirici Paneli</a>
+                    <a href="#" class="hover:text-indigo-500 transition">İletişim</a>
+                </div>
+                <div class="text-[10px] opacity-20 font-mono tracking-widest">
+                    KYIV // 2026 // MMXXVI
+                </div>
             </div>
         </footer>
     </div>
 
     <script>
-        const { createApp, ref, onMounted, computed } = Vue;
+        const { createApp, ref, computed } = Vue;
 
         createApp({
             setup() {
                 const currentLang = ref('tr');
-                const city = ref('Kyiv');
-                const temp = ref('21');
-                const weatherDesc = ref('Cloudy');
-                const currentTime = ref('');
+                const activeCategory = ref('Hepsi');
+                const categories = ['Hepsi', 'Araçlar', 'Eğitim', 'Finans', 'Yaşam', 'Haber'];
 
                 const languages = {
-                    tr: { flag: 'https://flagcdn.com/tr.svg', status: 'DİJİTAL MİMARİ ÜRETİMİ', heroSub: 'Karmaşık sorunlara minimalist ve yüksek performanslı mobil çözümler sunuyoruz.', mikatDesc: 'Yüksek hassasiyetli algoritmasıyla ibadet vakitlerini ve dini rehberliği modern arayüzle buluşturan amiral gemisi uygulamamız.', pawpalDesc: 'Evcil hayvanlarınızın sağlığı, randevuları ve günlük rutinleri için geliştirilmiş akıllı takip asistanı.', inverDesc: 'Kyiv şehri altyapı verilerini, anlık su kesintilerini ve finansal değişimleri takip eden profesyonel platform.', btn: 'Sistemi Başlat', contactTitle: 'BAĞLANTI KUR' },
-                    en: { flag: 'https://flagcdn.com/us.svg', status: 'DIGITAL ARCHITECTURAL PRODUCTION', heroSub: 'Providing minimalist and high-performance mobile solutions for complex problems.', mikatDesc: 'Our flagship app blending high-precision algorithms with a modern UI for prayer times and spiritual guidance.', pawpalDesc: 'Smart tracking assistant developed for your pets\' health, appointments, and daily routines.', inverDesc: 'Professional platform monitoring Kyiv\'s infrastructure, water outages, and financial trends.', btn: 'Launch System', contactTitle: 'GET CONNECTED' },
-                    ua: { flag: 'https://flagcdn.com/ua.svg', status: 'ЦИФРОВЕ АРХІТЕКТУРНЕ ВИРОБНИЦТВО', heroSub: 'Надаємо мінімалістичні та високоефективні мобільні рішення.', mikatDesc: 'Флагманський додаток з високоточними алгоритмами для духовного керівництва.', pawpalDesc: 'Розумний помічник для відстеження здоров’я та рутини ваших улюбленців.', inverDesc: 'Платформа моніторингу інфраструктури Києва, відключень води та фінансів.', btn: 'Відкрити', contactTitle: 'ЗВ’ЯЖІТЬСЯ' },
-                    ru: { flag: 'https://flagcdn.com/ru.svg', status: 'ЦИФРОВОЕ АРХИТЕКТУРНОЕ ПРОИЗВОДСТВО', heroSub: 'Минималистичные и высокопроизводительные мобильные решения.', mikatDesc: 'Флагманское приложение с высокоточными алгоритмами для духовного руководства.', pawpalDesc: 'Умный помощник для отслеживания здоровья и рутины ваших питомцев.', inverDesc: 'Платформа мониторинга инфраструктуры Киева, отключений воды и финансов.', btn: 'Открыть', contactTitle: 'СВЯЗАТЬСЯ' }
+                    tr: { mikatShort: 'İbadet vakitlerini ve dini rehberliği modern arayüzle buluşturan amiral gemisi uygulamamız.' },
+                    en: { mikatShort: 'Our flagship app blending modern UI with spiritual guidance and prayer times.' },
+                    ua: { mikatShort: 'Наш флагманський додаток для духовного керівництва та часу молитов.' }
                 };
 
-                const t = computed(() => languages[currentLang.value]);
+                const apps = ref([
+                    {
+                        name: 'MİKAT',
+                        icon: 'fa-kaaba',
+                        color: 'bg-amber-500 text-black',
+                        version: 'v2.4',
+                        developer: 'ByAltun Labs',
+                        category: 'Eğitim',
+                        link: 'https://byaltun4.github.io/mikat/index.html',
+                        desc: {
+                            tr: 'Vakitleri saniyesi saniyesine takip edin, kıbleyi bulun ve maneviyatınızı dijital dünya ile birleştirin.',
+                            en: 'Track prayer times with second-by-second precision, find Qibla and sync your soul with digital.',
+                            ua: 'Слідкуйте за часом з точністю до секунд, знаходьте Кіблу та синхронізуйте свою душу.'
+                        }
+                    },
+                    {
+                        name: 'PAWPAL',
+                        icon: 'fa-paw',
+                        color: 'bg-emerald-500 text-white',
+                        version: 'v1.1',
+                        developer: 'ByAltun Labs',
+                        category: 'Yaşam',
+                        link: 'https://byaltun4.github.io/pawpal/',
+                        desc: {
+                            tr: 'Evcil hayvanlarınızın sağlığı, aşı takibi ve günlük ihtiyaçları için akıllı asistanınız.',
+                            en: 'Your smart assistant for your pets health, vaccine tracking, and daily needs.',
+                            ua: 'Ваш розумний помічник для здоров’я домашніх тварин та відстеження щеплень.'
+                        }
+                    },
+                    {
+                        name: 'INVER WATER',
+                        icon: 'fa-droplet',
+                        color: 'bg-blue-600 text-white',
+                        version: 'v4.0',
+                        developer: 'İNVER voda',
+                        category: 'Haber',
+                        link: 'https://inver2-ops.github.io/',
+                        desc: {
+                            tr: 'Kyiv su kesintileri, döviz kurları ve su otomatları haritası. Kyiv sakinleri için temel araç.',
+                            en: 'Kyiv water outages, currency rates, and water vending machine map. Essential for Kyiv residents.',
+                            ua: 'Карта відключень води у Києві, курси валют та карта автоматів з водою.'
+                        }
+                    }
+                ]);
 
-                onMounted(() => {
-                    setInterval(() => { currentTime.value = new Date().toLocaleTimeString(); }, 1000);
-                    
-                    // Hava Durumu Verisi
-                    fetch('https://wttr.in/Kyiv?format=j1').then(r => r.json()).then(data => {
-                        temp.value = data.current_condition[0].temp_C;
-                        weatherDesc.value = data.current_condition[0].weatherDesc[0].value;
-                    });
-
-                    // GSAP Animasyonları
-                    gsap.from("h1", { opacity: 0, scale: 0.8, duration: 1.5, ease: "expo.out" });
-                    gsap.from(".glass-card", { opacity: 0, y: 50, stagger: 0.2, duration: 1, ease: "power3.out" });
+                const filteredApps = computed(() => {
+                    if (activeCategory.value === 'Hepsi') return apps.value;
+                    return apps.value.filter(app => app.category === activeCategory.value);
                 });
 
-                return { currentLang, languages, t, city, temp, weatherDesc, currentTime };
+                return { currentLang, activeCategory, categories, apps, filteredApps, languages };
             }
         }).mount('#app');
     </script>
