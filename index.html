@@ -26,7 +26,6 @@
         .app-card:hover { transform: translateY(-8px); border-color: #24bd6344; }
         .animate-in { animation: fadeIn 0.5s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .bot-loading { animation: pulse 1s infinite; pointer-events: none; opacity: 0.6; }
     </style>
 </head>
 <body :class="isDark ? 'dark' : 'light'">
@@ -128,9 +127,36 @@
             </div>
         </div>
 
-        <div v-if="selectedApp.screen" class="mt-20">
-            <h3 class="text-[10px] font-black opacity-30 tracking-[10px] uppercase mb-8 text-center underline">Önizleme</h3>
-            <img :src="selectedApp.screen" class="w-full rounded-[3.5rem] shadow-2xl border border-white/10 hover:scale-[1.01] transition-transform duration-500">
+        <div class="mt-20 glass p-8 md:p-14 rounded-[3.5rem]">
+            <h3 class="text-2xl font-black mb-10 italic uppercase tracking-tighter">KULLANICI <span class="pure-green">DENEYİMLERİ</span></h3>
+            
+            <div v-if="user" class="mb-12 bg-white/5 p-8 rounded-3xl border border-white/5">
+                <p class="text-[9px] font-black opacity-40 mb-4 uppercase">Uygulamayı Puanla</p>
+                <div class="flex gap-2 mb-6 text-xl text-yellow-500">
+                    <i v-for="i in 5" @click="newStars = i" :class="i <= newStars ? 'fas fa-star' : 'far fa-star'" class="cursor-pointer transition-transform active:scale-125"></i>
+                </div>
+                <div class="flex flex-col md:flex-row gap-4">
+                    <input v-model="newComment" placeholder="Düşüncelerini yaz..." class="flex-1 bg-slate-500/10 p-5 rounded-2xl outline-none border-2 border-transparent focus:border-pure transition">
+                    <button @click="addComment" class="bg-pure text-white px-10 py-5 rounded-2xl font-black uppercase italic shadow-lg hover:brightness-110 transition">GÖNDER</button>
+                </div>
+            </div>
+            <p v-else class="text-center py-6 glass rounded-2xl text-xs opacity-40 italic font-bold uppercase tracking-widest mb-10">Yorum yapmak için giriş yapmalısın.</p>
+
+            <div class="space-y-6">
+                <div v-for="c in appComments" :key="c.id" class="bg-white/5 p-6 rounded-3xl border border-white/5">
+                    <div class="flex justify-between items-center mb-3">
+                        <div class="flex items-center gap-3">
+                            <span class="text-[11px] font-black pure-green uppercase tracking-widest">{{ c.user }}</span>
+                            <div class="text-[9px] text-yellow-500">
+                                <i v-for="i in c.stars" class="fas fa-star"></i>
+                            </div>
+                        </div>
+                        <span class="text-[9px] opacity-30 font-bold uppercase">{{ c.date }}</span>
+                    </div>
+                    <p class="text-sm italic opacity-80 leading-relaxed font-medium">"{{ c.text }}"</p>
+                </div>
+                <div v-if="appComments.length == 0" class="text-center py-10 opacity-20 italic font-bold">Henüz değerlendirme yapılmamış. İlk yorumu sen yap!</div>
+            </div>
         </div>
     </main>
 
@@ -143,7 +169,7 @@
             <div class="flex gap-4 items-center">
                  <div class="text-right hidden md:block">
                      <p class="text-[10px] font-black opacity-40 uppercase">Sistem Durumu</p>
-                     <p class="text-sm font-black pure-green">{{ activeUsers }} Aktif Kullanıcı</p>
+                     <p class="text-sm font-black pure-green">{{ activeUsers }} Gerçek Aktif Kullanıcı</p>
                  </div>
                  <button @click="goHome" class="bg-white/5 px-6 py-2 rounded-xl text-xs font-bold border border-white/5 hover:bg-white/10 transition">KAPAT</button>
             </div>
@@ -151,45 +177,40 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
             <div class="space-y-6">
+                <div class="glass p-8 rounded-[2.5rem] border border-pure/20">
+                    <h3 class="font-black mb-4 text-xs tracking-widest uppercase opacity-40">BOT İLE VERİ ÇEK</h3>
+                    <input v-model="botUrl" type="text" placeholder="APKPure / Mirror URL..." class="w-full bg-slate-500/10 p-4 rounded-xl text-xs mb-4 outline-none border border-transparent focus:border-pure transition">
+                    <button @click="fetchBotData" class="w-full bg-pure text-white py-4 rounded-2xl font-black text-xs uppercase shadow-lg shadow-green-500/20">VERİLERİ GETİR</button>
+                </div>
+
                 <div class="glass p-8 rounded-[2.5rem]">
                     <h3 class="font-black mb-6 text-xs tracking-widest uppercase opacity-40">Duyuru Yönetimi</h3>
                     <div v-if="announcement" class="bg-pure/10 p-4 rounded-2xl mb-4 border border-pure/20 relative group">
                         <p class="text-[11px] font-bold italic">"{{ announcement }}"</p>
                         <button @click="deleteAnn" class="absolute -top-2 -right-2 text-red-500 bg-white dark:bg-slate-900 rounded-full w-6 h-6 shadow-lg opacity-0 group-hover:opacity-100 transition"><i class="fas fa-times-circle"></i></button>
                     </div>
-                    <textarea v-model="newAnn" class="w-full bg-slate-500/10 p-4 rounded-xl text-xs h-24 mb-4 outline-none border border-transparent focus:border-pure transition" placeholder="Yeni duyuru yazın..."></textarea>
-                    <button @click="updateAnn" class="w-full bg-pure text-white py-4 rounded-2xl font-black text-xs uppercase shadow-lg shadow-green-500/20">GÜNCELLE</button>
-                </div>
-                <div class="glass p-8 rounded-[2.5rem] border-l-4 border-blue-500">
-                    <h3 class="font-black text-xs opacity-40 mb-2 uppercase">Toplam Etkileşim</h3>
-                    <p class="text-4xl font-black tracking-tighter">{{ totalDownloads }} <span class="text-sm opacity-40">İNDİRME</span></p>
+                    <textarea v-model="newAnn" class="w-full bg-slate-500/10 p-4 rounded-xl text-xs h-24 mb-4 outline-none focus:border-pure transition" placeholder="Yeni duyuru..."></textarea>
+                    <button @click="updateAnn" class="w-full bg-pure text-white py-4 rounded-2xl font-black text-xs uppercase">GÜNCELLE</button>
                 </div>
             </div>
 
-            <div class="lg:col-span-2 space-y-12">
+            <div class="lg:col-span-2 space-y-10">
                 <section>
-                    <div class="flex items-center gap-3 mb-6">
-                        <h3 class="text-xl font-black text-amber-500 italic uppercase">🚨 BEKLEYEN İŞLEMLER</h3>
-                        <span class="bg-amber-500/20 text-amber-500 text-[10px] px-3 py-1 rounded-full font-black">{{ pendingApps.length }}</span>
-                    </div>
-                    <div v-if="pendingApps.length" class="space-y-4">
-                        <div v-for="app in pendingApps" :key="app.id" class="glass p-6 rounded-[2.5rem] flex items-center gap-6 border-l-4 border-amber-500">
-                            <img :src="app.icon" class="w-16 h-16 rounded-2xl shadow-lg">
-                            <div class="flex-1">
-                                <h4 class="font-black text-lg leading-tight">{{ app.name }}</h4>
-                                <p class="text-[10px] opacity-40 uppercase font-bold">{{ app.category }} • {{ app.devName || 'Anonim' }}</p>
-                            </div>
+                    <h3 class="text-xl font-black mb-6 text-amber-500 italic uppercase">🚨 BEKLEYENLER ({{ pendingApps.length }})</h3>
+                    <div class="grid gap-4">
+                        <div v-for="app in pendingApps" :key="app.id" class="glass p-6 rounded-[2rem] flex items-center gap-6 border-l-4 border-amber-500">
+                            <img :src="app.icon" class="w-14 h-14 rounded-xl">
+                            <div class="flex-1"><h4 class="font-black">{{ app.name }}</h4><p class="text-[10px] opacity-40">{{ app.devName }}</p></div>
                             <div class="flex gap-2">
-                                <button @click="adminAction('approve', app.id)" class="bg-green-500 text-white px-5 py-2 rounded-xl text-[10px] font-black shadow-lg shadow-green-500/20">ONAYLA</button>
-                                <button @click="adminAction('delete', app.id)" class="bg-red-500/10 text-red-500 px-5 py-2 rounded-xl text-[10px] font-black border border-red-500/20">REDDET</button>
+                                <button @click="adminAction('approve', app.id)" class="bg-green-500 text-white px-5 py-2 rounded-xl text-[10px] font-black">ONAYLA</button>
+                                <button @click="adminAction('delete', app.id)" class="bg-red-500/10 text-red-500 px-5 py-2 rounded-xl text-[10px] font-black">RED</button>
                             </div>
                         </div>
                     </div>
-                    <div v-else class="text-center py-10 glass rounded-[2rem] opacity-20 italic font-bold">Bekleyen uygulama başvurusu bulunmuyor.</div>
                 </section>
 
                 <section>
-                    <h3 class="text-xl font-black mb-6 pure-green italic uppercase">📱 MAĞAZA ENVANTERİ</h3>
+                    <h3 class="text-xl font-black mb-6 pure-green italic uppercase">📱 TÜM UYGULAMALAR</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div v-for="app in approvedApps" :key="app.id" class="glass p-4 rounded-3xl border border-white/5">
                             <div class="flex items-center gap-4 mb-4">
@@ -200,10 +221,16 @@
                                 </div>
                                 <button @click="toggleLog(app.id)" class="bg-pure/10 pure-green p-2 rounded-lg text-[10px] font-black">LOGS</button>
                             </div>
+                            <div v-if="showLogId === app.id" class="bg-black/20 rounded-2xl p-4 mb-4 text-[9px] font-mono max-h-32 overflow-y-auto no-scrollbar">
+                                <div v-for="log in app.logs" class="flex justify-between border-b border-white/5 pb-1 mb-1">
+                                    <span>{{ log.date }}</span> <span class="pure-green">{{ log.ip }}</span>
+                                </div>
+                                <p v-if="!app.logs?.length" class="text-center opacity-20">Kayıt yok.</p>
+                            </div>
                             <div class="flex gap-2 pt-2 border-t border-white/5">
-                                <button @click="adminAction('toggle-today', app.id)" :class="app.isToday?'bg-amber-500 text-black':'bg-white/5 opacity-30'" class="px-3 py-1.5 rounded-lg text-[8px] font-black uppercase flex-1 transition">Öne Çıkar</button>
+                                <button @click="adminAction('toggle-today', app.id)" :class="app.isToday?'bg-amber-500 text-black':'bg-white/5 opacity-30'" class="px-3 py-1.5 rounded-lg text-[8px] font-black uppercase flex-1 transition">Günün</button>
                                 <button @click="adminAction('toggle-sponsor', app.id)" :class="app.isSponsor?'bg-blue-600 text-white':'bg-white/5 opacity-30'" class="px-3 py-1.5 rounded-lg text-[8px] font-black uppercase flex-1 transition">Sponsor</button>
-                                <button @click="adminAction('delete', app.id)" class="bg-red-500/10 text-red-500 p-2 rounded-lg hover:bg-red-500 hover:text-white transition"><i class="fas fa-trash"></i></button>
+                                <button @click="adminAction('delete', app.id)" class="bg-red-500/10 text-red-500 p-2 rounded-lg"><i class="fas fa-trash"></i></button>
                             </div>
                         </div>
                     </div>
@@ -216,55 +243,40 @@
         <div v-if="view == 'auth'">
             <h2 class="text-3xl font-black text-center mb-10 uppercase italic tracking-tighter">{{ isReg ? 'Kayıt Ol' : 'Giriş Yap' }}</h2>
             <div class="space-y-4">
-                <input v-model="authForm.email" type="email" placeholder="E-Posta" class="w-full bg-slate-500/10 p-4 rounded-2xl outline-none focus:border-pure border border-transparent transition">
+                <input v-model="authForm.email" type="email" placeholder="E-posta" class="w-full bg-slate-500/10 p-4 rounded-2xl outline-none focus:border-pure border border-transparent transition">
                 <input v-model="authForm.password" type="password" placeholder="Şifre" class="w-full bg-slate-500/10 p-4 rounded-2xl outline-none focus:border-pure border border-transparent transition">
-                <button @click="handleAuth" class="w-full bg-pure text-white py-5 rounded-2xl font-black uppercase shadow-lg shadow-green-500/20 mt-4 hover:scale-[1.02] active:scale-95 transition">DEVAM ET</button>
-                <p @click="isReg = !isReg" class="text-center text-[10px] font-black opacity-40 cursor-pointer mt-6 uppercase tracking-widest hover:opacity-100 transition">{{ isReg ? 'Giriş Yap' : 'Hesap Oluştur' }}</p>
+                <button @click="handleAuth" class="w-full bg-pure text-white py-5 rounded-2xl font-black uppercase shadow-lg shadow-green-500/20 mt-4">DEVAM ET</button>
+                <p @click="isReg = !isReg" class="text-center text-[10px] font-black opacity-40 cursor-pointer mt-6 uppercase tracking-widest">{{ isReg ? 'Giriş Yap' : 'Hesap Oluştur' }}</p>
             </div>
         </div>
 
-        <div v-if="view == 'upload'" :class="botLoading ? 'bot-loading' : ''">
+        <div v-if="view == 'upload'">
             <h2 class="text-2xl font-black mb-8 pure-green italic uppercase text-center tracking-tighter">UYGULAMA GÖNDER</h2>
-            
-            <div class="bg-white/5 p-4 rounded-2xl mb-6 border border-pure/20">
-                <p class="text-[9px] font-black opacity-40 mb-2 uppercase italic">Hızlı İçe Aktar (APKPure / Mirror)</p>
-                <div class="flex gap-2">
-                    <input v-model="botUrl" type="text" placeholder="Uygulama linkini yapıştır..." class="flex-1 bg-black/20 p-3 rounded-xl text-xs outline-none border border-transparent focus:border-pure">
-                    <button @click="fetchBotData" class="bg-pure text-white px-4 rounded-xl text-[10px] font-bold">VERİ ÇEK</button>
-                </div>
-            </div>
-
             <div class="space-y-4">
                 <input v-model="appForm.name" placeholder="Uygulama Adı" class="w-full bg-slate-500/10 p-4 rounded-xl outline-none focus:border-pure text-sm">
                 <select v-model="appForm.category" class="w-full bg-slate-500/10 p-4 rounded-xl outline-none focus:border-pure text-sm">
                     <option value="Uygulama">Uygulama</option>
                     <option value="Oyun">Oyun</option>
                 </select>
-                <input v-model="appForm.apkUrl" placeholder="İndirme Linki (Drive, APKPure vb.)" class="w-full bg-slate-500/10 p-4 rounded-xl outline-none focus:border-pure text-sm italic font-bold">
+                <input v-model="appForm.apkUrl" placeholder="İndirme Linki (Drive, Mega vb.)" class="w-full bg-slate-500/10 p-4 rounded-xl outline-none focus:border-pure text-sm italic font-bold">
                 
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="space-y-2">
-                        <div class="relative bg-slate-500/10 p-6 rounded-2xl text-center border-2 border-dashed border-white/5">
-                            <i class="fas fa-image mb-2 opacity-30"></i>
-                            <span class="block text-[8px] font-black uppercase">İKON</span>
-                            <input type="file" @change="e => uploadFile(e, 'icon')" class="absolute inset-0 opacity-0 cursor-pointer">
-                            <img v-if="appForm.icon" :src="appForm.icon" class="absolute inset-0 w-full h-full object-cover rounded-2xl">
-                        </div>
-                        <input v-model="appForm.icon" placeholder="İkon URL" class="w-full bg-black/20 p-2 rounded-lg text-[9px] outline-none border border-transparent focus:border-pure">
+                    <div class="relative bg-slate-500/10 p-6 rounded-2xl text-center border-2 border-dashed border-white/5 hover:border-pure/40 transition">
+                        <i class="fas fa-image mb-2 opacity-30"></i>
+                        <span class="block text-[8px] font-black uppercase">İKON</span>
+                        <input type="file" @change="e => uploadFile(e, 'icon')" class="absolute inset-0 opacity-0 cursor-pointer">
+                        <img v-if="appForm.icon" :src="appForm.icon" class="absolute inset-0 w-full h-full object-cover rounded-2xl">
                     </div>
-                    <div class="space-y-2">
-                        <div class="relative bg-slate-500/10 p-6 rounded-2xl text-center border-2 border-dashed border-white/5">
-                            <i class="fas fa-desktop mb-2 opacity-30"></i>
-                            <span class="block text-[8px] font-black uppercase">EKRAN</span>
-                            <input type="file" @change="e => uploadFile(e, 'screen')" class="absolute inset-0 opacity-0 cursor-pointer">
-                            <img v-if="appForm.screen" :src="appForm.screen" class="absolute inset-0 w-full h-full object-cover rounded-2xl">
-                        </div>
-                        <input v-model="appForm.screen" placeholder="Ekran URL" class="w-full bg-black/20 p-2 rounded-lg text-[9px] outline-none border border-transparent focus:border-pure">
+                    <div class="relative bg-slate-500/10 p-6 rounded-2xl text-center border-2 border-dashed border-white/5 hover:border-pure/40 transition">
+                        <i class="fas fa-desktop mb-2 opacity-30"></i>
+                        <span class="block text-[8px] font-black uppercase">EKRAN</span>
+                        <input type="file" @change="e => uploadFile(e, 'screen')" class="absolute inset-0 opacity-0 cursor-pointer">
+                        <img v-if="appForm.screen" :src="appForm.screen" class="absolute inset-0 w-full h-full object-cover rounded-2xl">
                     </div>
                 </div>
 
                 <textarea v-model="appForm.desc" placeholder="Kısa bir açıklama..." class="w-full bg-slate-500/10 p-4 rounded-xl outline-none focus:border-pure text-sm h-28 italic"></textarea>
-                <button @click="submitApp" class="w-full bg-pure text-white py-5 rounded-2xl font-black uppercase shadow-lg shadow-green-500/30 mt-4 hover:brightness-110 transition">BYALTUN'A GÖNDER</button>
+                <button @click="submitApp" class="w-full bg-pure text-white py-5 rounded-2xl font-black uppercase shadow-lg shadow-green-500/30 mt-4">BYALTUN'A GÖNDER</button>
             </div>
         </div>
     </main>
@@ -277,7 +289,6 @@
 
 <script>
 const { createApp, ref, onMounted, computed } = Vue;
-
 createApp({
     setup() {
         const WORKER_URL = "https://byaltunstore.byaltun4.workers.dev";
@@ -295,11 +306,11 @@ createApp({
         const sortType = ref('new');
         const selectedApp = ref(null);
         const newComment = ref('');
+        const newStars = ref(5);
         const adminClicks = ref(0);
         const activeUsers = ref(0);
         const showLogId = ref(null);
         const botUrl = ref('');
-        const botLoading = ref(false);
 
         const authForm = ref({ email: '', password: '' });
         const appForm = ref({ name: '', icon: '', screen: '', apkUrl: '', devName: '', desc: '', category: 'Uygulama' });
@@ -316,37 +327,30 @@ createApp({
         };
 
         const fetchBotData = async () => {
-            if(!botUrl.value) return alert("Link girin!");
-            botLoading.value = true;
-            try {
-                // Not: Scraping CORS hatası verebileceği için Worker üzerinden çekilmelidir.
-                // Burası Worker'daki 'bot-fetch' endpointini tetikler.
-                const res = await fetch(`${WORKER_URL}/bot-fetch`, {
-                    method: 'POST',
-                    body: JSON.stringify({ url: botUrl.value })
-                });
-                const data = await res.json();
-                if(data.success) {
-                    appForm.value.name = data.title;
-                    appForm.value.icon = data.icon;
-                    appForm.value.screen = data.screenshot;
-                    appForm.value.desc = data.description;
-                    appForm.value.apkUrl = data.downloadUrl || botUrl.value;
-                } else {
-                    alert("Veri çekilemedi, lütfen manuel doldurun.");
-                }
-            } catch (e) { alert("Bot şu an meşgul."); }
-            finally { botLoading.value = false; }
+            if(!botUrl.value) return alert("URL girin.");
+            const res = await fetch(`${WORKER_URL}/bot-fetch`, { method:'POST', body: JSON.stringify({url: botUrl.value}) });
+            const data = await res.json();
+            if(data.success) {
+                appForm.value.name = data.title;
+                appForm.value.icon = data.icon;
+                appForm.value.desc = data.description;
+                view.value = 'upload';
+                alert("Veriler çekildi!");
+            } else { alert("Bot veriyi çekemedi."); }
         };
 
-        const toggleTheme = () => {
-            isDark.value = !isDark.value;
-            localStorage.setItem('theme', isDark.value ? 'dark' : 'light');
+        const addComment = async () => {
+            if(!newComment.value.trim()) return;
+            await fetch(`${WORKER_URL}/comment`, {
+                method: 'POST',
+                body: JSON.stringify({ appId: selectedApp.value.id, text: newComment.value, stars: newStars.value, user: user.value.split('@')[0] })
+            });
+            newComment.value = ''; newStars.value = 5;
+            sync();
         };
 
-        const toggleLog = (id) => {
-            showLogId.value = showLogId.value === id ? null : id;
-        };
+        const toggleTheme = () => { isDark.value = !isDark.value; localStorage.setItem('theme', isDark.value ? 'dark' : 'light'); };
+        const toggleLog = (id) => { showLogId.value = showLogId.value === id ? null : id; };
 
         const uploadFile = (e, target) => {
             const file = e.target.files[0];
@@ -356,30 +360,19 @@ createApp({
             reader.readAsDataURL(file);
         };
 
-        const handleAuth = async () => {
-            if(!authForm.value.email || !authForm.value.password) return alert("Eksik bilgi!");
-            const res = await fetch(`${WORKER_URL}/auth`, {
-                method: 'POST',
-                body: JSON.stringify({ ...authForm.value, action: isReg.value ? 'register' : 'login' })
-            });
-            const data = await res.json();
-            if (data.token) {
-                user.value = authForm.value.email;
-                localStorage.setItem('user', user.value);
-                view.value = 'store';
-                sync();
-            } else { alert(data.message || "Hata!"); }
+        const handleAuth = () => {
+            localStorage.setItem('user', authForm.value.email);
+            user.value = authForm.value.email;
+            view.value = 'store';
+            sync();
         };
 
         const submitApp = async () => {
-            if(!appForm.value.name || !appForm.value.icon) return alert("Zorunlu alanları doldurun!");
+            if(!appForm.value.name || !appForm.value.icon || !appForm.value.apkUrl) return alert("Eksik alanlar var!");
             appForm.value.devName = user.value.split('@')[0];
             await fetch(`${WORKER_URL}/submit`, { method: 'POST', body: JSON.stringify(appForm.value) });
-            alert("Gönderildi!");
-            appForm.value = { name: '', icon: '', screen: '', apkUrl: '', devName: '', desc: '', category: 'Uygulama' };
-            botUrl.value = '';
+            alert("İncelemeye gönderildi.");
             goHome();
-            sync();
         };
 
         const openDetail = (app) => {
@@ -390,15 +383,12 @@ createApp({
         };
 
         const handleDownload = (app) => {
-            fetch(`${WORKER_URL}/track`, { method: 'POST', body: JSON.stringify({ id: app.id, type: 'download', platform: 'Web' }) });
+            fetch(`${WORKER_URL}/track`, { method: 'POST', body: JSON.stringify({ id: app.id, type: 'download' }) });
             window.open(app.apkUrl, '_blank');
+            setTimeout(sync, 1500);
         };
 
-        const triggerAdmin = () => {
-            adminClicks.value++;
-            if(adminClicks.value >= 5) adminLogin();
-        };
-
+        const triggerAdmin = () => { adminClicks.value++; if(adminClicks.value >= 5) adminLogin(); };
         const adminLogin = async () => {
             const pass = prompt("Yönetici Anahtarı:");
             if(pass === "ByAltunAdmin123!") {
@@ -412,76 +402,50 @@ createApp({
 
         const adminAction = async (action, id) => {
             const key = localStorage.getItem('adminKey');
-            let list = [...adminApps.value];
+            let list = JSON.parse(JSON.stringify(adminApps.value));
             const i = list.findIndex(a => a.id === id);
             if(action === 'approve') list[i].status = 'approved';
-            if(action === 'delete') list = list.filter(a => a.id !== id);
+            if(action === 'delete' && confirm("Silinsin mi?")) list = list.filter(a => a.id !== id);
             if(action === 'toggle-today') list[i].isToday = !list[i].isToday;
             if(action === 'toggle-sponsor') list[i].isSponsor = !list[i].isSponsor;
-
-            await fetch(`${WORKER_URL}/admin-save`, {
-                method: 'POST',
-                headers: { "X-Admin-Key": key },
-                body: JSON.stringify({ payload: list })
-            });
-            adminApps.value = list;
-            sync();
+            await fetch(`${WORKER_URL}/admin-save`, { method: 'POST', headers: { "X-Admin-Key": key }, body: JSON.stringify({ payload: list }) });
+            adminApps.value = list; sync();
         };
 
         const updateAnn = async () => {
-            await fetch(`${WORKER_URL}/admin-save`, {
-                method: 'POST',
-                headers: { "X-Admin-Key": localStorage.getItem('adminKey') },
-                body: JSON.stringify({ announcement: newAnn.value })
-            });
-            announcement.value = newAnn.value;
+            await fetch(`${WORKER_URL}/admin-save`, { method: 'POST', headers: { "X-Admin-Key": localStorage.getItem('adminKey') }, body: JSON.stringify({ announcement: newAnn.value }) });
+            announcement.value = newAnn.value; alert("Duyuru yayında.");
         };
 
         const deleteAnn = async () => {
-            await fetch(`${WORKER_URL}/admin-save`, {
-                method: 'POST',
-                headers: { "X-Admin-Key": localStorage.getItem('adminKey') },
-                body: JSON.stringify({ announcement: "" })
-            });
-            announcement.value = "";
+            await fetch(`${WORKER_URL}/admin-save`, { method: 'POST', headers: { "X-Admin-Key": localStorage.getItem('adminKey') }, body: JSON.stringify({ announcement: "" }) });
+            announcement.value = ""; newAnn.value = "";
         };
 
         const filteredApps = computed(() => {
             let res = apps.value.filter(a => {
                 const mSearch = a.name.toLowerCase().includes(search.value.toLowerCase());
                 const mCat = catFilter.value === 'all' || a.category === catFilter.value;
-                return mSearch && mCat && a.status === 'approved';
+                const mSort = sortType.value === 'choice' ? a.isSponsor : true;
+                return mSearch && mCat && mSort && a.status === 'approved';
             });
             if(sortType.value === 'top') return res.sort((a,b) => (b.downloads||0) - (a.downloads||0));
-            if(sortType.value === 'choice') return res.filter(a => a.isSponsor);
             return res.sort((a,b) => b.id - a.id);
         });
 
         const featuredApps = computed(() => apps.value.filter(a => a.isToday && a.status === 'approved'));
+        const appComments = computed(() => comments.value.filter(c => c.appId === selectedApp.value?.id));
         const pendingApps = computed(() => adminApps.value.filter(a => a.status === 'pending'));
         const approvedApps = computed(() => adminApps.value.filter(a => a.status === 'approved'));
-        const totalDownloads = computed(() => apps.value.reduce((acc, app) => acc + (app.downloads || 0), 0));
+        const updateTitle = computed(() => { document.title = selectedApp.value ? `${selectedApp.value.name} APK | ByAltun` : 'ByAltun APK 2026'; return ""; });
 
-        const setFilter = (c) => { catFilter.value = c; search.value = ''; view.value = 'store'; };
-        const setSort = (s) => { sortType.value = s; view.value = 'store'; };
+        const setFilter = (c) => { catFilter.value = c; search.value = ''; sortType.value = 'new'; view.value = 'store'; };
+        const setSort = (s) => { sortType.value = s; catFilter.value = 'all'; view.value = 'store'; };
         const goHome = () => { view.value = 'store'; selectedApp.value = null; };
         const logout = () => { localStorage.clear(); user.value = null; view.value = 'store'; };
 
-        const updateTitle = computed(() => {
-            document.title = selectedApp.value ? `${selectedApp.value.name} | ByAltun` : "ByAltun APK | 2026 Mağaza";
-            return "";
-        });
-
         onMounted(sync);
-
-        return { 
-            isDark, view, user, isReg, apps, adminApps, announcement, newAnn, search, catFilter, sortType, 
-            authForm, appForm, selectedApp, newComment, activeUsers, showLogId, totalDownloads, 
-            botUrl, botLoading, uploadFile, handleAuth, submitApp, openDetail, handleDownload, 
-            adminLogin, adminAction, updateAnn, deleteAnn, updateTitle, filteredApps, featuredApps, 
-            pendingApps, approvedApps, setFilter, setSort, goHome, logout, triggerAdmin, toggleTheme, 
-            toggleLog, fetchBotData
-        };
+        return { isDark, view, user, isReg, apps, adminApps, announcement, newAnn, search, catFilter, sortType, authForm, appForm, selectedApp, newComment, newStars, activeUsers, showLogId, botUrl, fetchBotData, toggleTheme, toggleLog, uploadFile, handleAuth, submitApp, openDetail, handleDownload, addComment, triggerAdmin, adminAction, updateAnn, deleteAnn, updateTitle, filteredApps, featuredApps, appComments, pendingApps, approvedApps, setFilter, setSort, goHome, logout };
     }
 }).mount('#app');
 </script>
