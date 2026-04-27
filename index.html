@@ -2,209 +2,182 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ByAltun Store | Digital App Empire</title>
+    <title>ByAltun X | Next-Gen Store</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;600;800&family=Syncopate:wght@700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;600;800&family=Outfit:wght@900&display=swap');
         
-        :root { --p: #6366f1; --bg: #03040b; --card: rgba(255,255,255,0.03); }
-        body { background: var(--bg); color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; user-select: none; }
-        .font-logo { font-family: 'Syncopate', sans-serif; }
-
-        .glass { background: var(--card); backdrop-filter: blur(25px); border: 1px solid rgba(255,255,255,0.08); }
-        .neon-glow { box-shadow: 0 0 30px rgba(99, 102, 241, 0.2); border-color: var(--p); }
+        :root { --p: #6366f1; --bg-light: #f8fafc; --bg-dark: #020617; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; transition: 0.5s; overflow-x: hidden; }
         
-        /* 3D Logo Animasyonu */
-        .logo-box { width: 45px; height: 45px; background: linear-gradient(45deg, #6366f1, #a855f7); border-radius: 12px; transform: rotate(15deg); transition: 0.5s; }
-        .logo-box:hover { transform: rotate(0deg) scale(1.1); }
+        .dark { background: var(--bg-dark); color: #fff; }
+        .light { background: var(--bg-light); color: #0f172a; }
 
-        /* Badge Stilleri */
-        .badge-boost { background: linear-gradient(90deg, #f59e0b, #d97706); color: black; font-weight: 800; padding: 2px 10px; border-radius: 6px; font-size: 9px; }
-        .badge-promo { background: #3b82f6; color: white; font-weight: 800; padding: 2px 10px; border-radius: 6px; font-size: 9px; }
+        .glass { backdrop-filter: blur(20px); border: 1px solid rgba(120,120,120,0.1); }
+        .dark .glass { background: rgba(15,23,42,0.6); }
+        .light .glass { background: rgba(255,255,255,0.7); box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+
+        .neon-text { font-family: 'Outfit', sans-serif; text-transform: uppercase; letter-spacing: -2px; }
+        .btn-gradient { background: linear-gradient(135deg, #6366f1, #a855f7); color: white; border-radius: 18px; font-weight: 800; transition: 0.3s; }
+        .btn-gradient:hover { transform: scale(1.05); box-shadow: 0 0 30px rgba(99,102,241,0.4); }
 
         [v-cloak] { display: none; }
     </style>
 </head>
-<body oncontextmenu="return false;">
+<body :class="isDark ? 'dark' : 'light'" oncontextmenu="return false;">
 
-<div id="app" v-cloak class="min-h-screen">
-    
-    <div v-if="announcement" class="bg-indigo-600 py-2 text-center text-[10px] font-bold tracking-[3px] uppercase">
-        {{ announcement }}
-    </div>
-
-    <nav class="p-6 flex justify-between items-center border-b border-white/5 sticky top-0 bg-black/80 backdrop-blur-xl z-50">
+<div id="app" v-cloak>
+    <nav class="p-6 flex justify-between items-center glass sticky top-0 z-50">
         <div class="flex items-center gap-4">
-            <div class="logo-box flex items-center justify-center"><i class="fas fa-box-open text-white"></i></div>
-            <h1 class="text-xl font-logo tracking-tighter text-indigo-500">BYALTUN</h1>
+            <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white"><i class="fas fa-bolt"></i></div>
+            <h1 class="text-xl font-bold tracking-tighter">BYALTUN <span class="opacity-50">X</span></h1>
         </div>
-        <div class="flex gap-4">
-            <button @click="view = 'store'" class="text-xs font-bold px-4" :class="view=='store'?'text-indigo-500':''">STORE</button>
-            <button @click="view = 'upload'" class="bg-indigo-600 px-6 py-2 rounded-full text-xs font-bold hover:scale-105 transition">YAYINLA</button>
+
+        <div class="flex items-center gap-8">
+            <div class="hidden md:flex items-center gap-4 text-[10px] font-bold uppercase tracking-widest opacity-60">
+                <span>{{ location }}</span>
+                <span class="w-1.5 h-1.5 bg-indigo-500 rounded-full"></span>
+                <span>{{ weather.temp }}°C {{ weather.desc }}</span>
+                <span class="w-1.5 h-1.5 bg-indigo-500 rounded-full"></span>
+                <span>{{ time }}</span>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <button @click="isDark = !isDark" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10 hover:bg-indigo-600 transition">
+                    <i :class="isDark ? 'fas fa-sun' : 'fas fa-moon'"></i>
+                </button>
+                <button @click="view = 'store'" class="text-xs font-bold px-4">MAĞAZA</button>
+                <button @click="view = 'upload'" class="btn-gradient px-6 py-2 text-xs">YÜKLE</button>
+            </div>
         </div>
     </nav>
 
-    <main v-if="view == 'store'" class="max-w-7xl mx-auto p-8 animate-fade-in">
-        <header class="mb-20 text-center lg:text-left">
-            <h2 class="text-5xl lg:text-8xl font-black mb-6 italic tracking-tighter">THE FUTURE<br><span class="opacity-20 italic">OF MOBILE.</span></h2>
-            <div class="flex gap-2">
-                <div class="h-1 w-20 bg-indigo-600 rounded-full"></div>
-                <div class="h-1 w-5 bg-white/20 rounded-full"></div>
-            </div>
-        </header>
+    <main v-if="view == 'store'" class="max-w-7xl mx-auto p-12">
+        <div class="text-center mb-24">
+            <h2 class="text-7xl lg:text-9xl neon-text italic mb-6">Explore<br><span class="text-indigo-600">The Lab</span></h2>
+            <p class="text-xs opacity-40 uppercase tracking-[10px]">Premium APK Distribution Hub</p>
+        </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div v-for="app in publicApps" :key="app.id" class="glass p-8 rounded-[2.5rem] group hover:neon-glow transition-all duration-500">
-                <div class="flex justify-between items-start mb-8">
-                    <img :src="app.icon" class="w-20 h-20 rounded-3xl shadow-2xl group-hover:rotate-6 transition duration-500">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+            <div v-for="app in apps" :key="app.id" class="glass p-10 rounded-[3rem] group hover:scale-[1.02] transition-all duration-500">
+                <div class="flex justify-between mb-8">
+                    <img :src="app.icon" class="w-24 h-24 rounded-[2rem] shadow-2xl group-hover:rotate-12 transition duration-500">
                     <div class="flex flex-col gap-2">
-                        <span v-if="app.isBoosted" class="badge-boost">ÖNE ÇIKAN</span>
-                        <span v-if="app.isSponsored" class="badge-promo">SPONSORLU</span>
+                        <span v-if="app.isBoosted" class="bg-amber-500 text-black px-3 py-1 rounded-full text-[9px] font-black">PREMIUM</span>
+                        <span class="bg-white/5 px-3 py-1 rounded-full text-[9px] opacity-40">{{ app.version || 'v1.0' }}</span>
                     </div>
                 </div>
-                <h3 class="text-3xl font-black mb-3">{{ app.name }}</h3>
-                <p class="text-sm opacity-40 mb-8 h-12 line-clamp-2 leading-relaxed">{{ app.desc }}</p>
-                <div class="flex justify-between items-center border-t border-white/5 pt-6">
-                    <span class="text-[10px] font-bold opacity-30 italic">DEV: {{ app.devName }}</span>
-                    <a :href="app.apkUrl" class="bg-white text-black px-8 py-3 rounded-2xl font-black text-xs hover:bg-indigo-500 hover:text-white transition">YÜKLE</a>
+                <h3 class="text-3xl font-black mb-4">{{ app.name }}</h3>
+                <p class="text-sm opacity-50 mb-10 h-12 line-clamp-2">{{ app.desc }}</p>
+                <div class="flex justify-between items-center">
+                    <span class="text-[10px] opacity-30 font-bold uppercase">{{ app.devName }}</span>
+                    <a :href="app.apkUrl" class="btn-gradient px-8 py-3 text-xs uppercase tracking-widest shadow-lg">YÜKLE</a>
                 </div>
             </div>
         </div>
     </main>
 
-    <main v-if="view == 'upload'" class="max-w-2xl mx-auto p-12 glass rounded-[3rem] mt-20 animate-slide-up">
-        <h2 class="text-4xl font-black mb-10 italic">CONSOLE_UPLOAD</h2>
-        <div class="space-y-4">
-            <input v-model="form.name" placeholder="Uygulama Adı" class="w-full bg-white/5 p-4 rounded-2xl border border-white/5 outline-none focus:border-indigo-500">
-            <input v-model="form.icon" placeholder="İkon URL" class="w-full bg-white/5 p-4 rounded-2xl border border-white/5 outline-none">
-            <input v-model="form.apkUrl" placeholder="APK Linki" class="w-full bg-white/5 p-4 rounded-2xl border border-white/5 outline-none">
-            <input v-model="form.devName" placeholder="Geliştirici İsmi" class="w-full bg-white/5 p-4 rounded-2xl border border-white/5 outline-none">
-            <textarea v-model="form.desc" placeholder="Detaylı Açıklama..." class="w-full bg-white/5 p-4 rounded-2xl border border-white/5 h-32 outline-none"></textarea>
-            <button @click="submitApp" class="w-full bg-indigo-600 py-5 rounded-2xl font-black uppercase tracking-widest hover:shadow-2xl transition">İncelemeye Gönder</button>
-        </div>
-    </main>
-
-    <main v-if="view == 'admin'" class="max-w-[1600px] mx-auto p-12 animate-fade-in">
-        <div class="flex justify-between items-center mb-12">
-            <h2 class="text-5xl font-black tracking-tighter text-amber-500 font-logo italic">ROOT_PANEL</h2>
-            <div class="flex gap-4">
-                <input v-model="newAnn" placeholder="Duyuru Metni..." class="bg-white/5 p-3 rounded-xl border border-white/10 text-xs w-64 outline-none">
-                <button @click="setAnnouncement" class="bg-indigo-600 px-6 rounded-xl text-xs font-bold">Duyuruyu Yayınla</button>
-            </div>
+    <main v-if="view == 'admin'" class="max-w-7xl mx-auto p-12 animate-fade-in">
+        <div class="flex justify-between items-center mb-16 border-b border-white/5 pb-8">
+            <h2 class="text-4xl font-black italic">BYALTUN_CONTROL_CENTER</h2>
+            <button @click="saveAdminChanges" class="bg-emerald-600 px-10 py-4 rounded-2xl font-black text-sm text-white">DEĞİŞİKLİKLERİ KAYDET</button>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div v-for="app in allApps" :key="app.id" class="glass p-6 rounded-3xl border-l-4" :class="app.status=='pending'?'border-amber-500':'border-emerald-500'">
-                <div class="flex gap-4 mb-6">
-                    <img :src="app.icon" class="w-16 h-16 rounded-xl bg-white/5">
-                    <div class="flex-1">
-                        <div class="flex justify-between">
-                            <h4 class="font-bold">{{ app.name }}</h4>
-                            <span class="text-[10px] opacity-40">{{ app.status.toUpperCase() }}</span>
-                        </div>
-                        <p class="text-[10px] opacity-40">{{ app.devName }} ({{ app.date }})</p>
+        <div class="grid grid-cols-1 gap-4">
+            <div v-for="app in adminApps" :key="app.id" class="glass p-6 rounded-3xl flex items-center gap-6">
+                <img :src="app.icon" class="w-16 h-16 rounded-2xl bg-white/5">
+                <div class="flex-1 grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <input v-model="app.name" class="bg-white/5 p-3 rounded-xl border border-white/10 text-xs">
+                    <input v-model="app.devName" class="bg-white/5 p-3 rounded-xl border border-white/10 text-xs">
+                    <select v-model="app.status" class="bg-white/5 p-3 rounded-xl border border-white/10 text-xs text-white">
+                        <option value="pending" class="text-black">Beklemede</option>
+                        <option value="approved" class="text-black">Onaylı</option>
+                    </select>
+                    <div class="flex gap-2">
+                        <button @click="app.isBoosted = !app.isBoosted" :class="app.isBoosted?'bg-amber-500':'bg-white/10'" class="p-3 rounded-xl text-xs flex-1 font-bold">ÖNE ÇIKAR</button>
+                        <button @click="deleteApp(app.id)" class="bg-red-600/20 text-red-400 p-3 rounded-xl text-xs"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <button @click="adminAction('update_status', app.id, 'approved')" class="bg-emerald-600/20 text-emerald-400 py-2 rounded-lg text-[10px] font-bold">ONAYLA</button>
-                    <button @click="adminAction('update_status', app.id, 'pending')" class="bg-amber-600/20 text-amber-400 py-2 rounded-lg text-[10px] font-bold">BEKLEMEYE AL</button>
-                    <button @click="adminAction('boost', app.id)" :class="app.isBoosted?'bg-amber-500 text-black':'bg-white/5 text-white'" class="py-2 rounded-lg text-[10px] font-bold">ÖNE ÇIKAR</button>
-                    <button @click="adminAction('sponsor', app.id)" :class="app.isSponsored?'bg-blue-500 text-white':'bg-white/5 text-white'" class="py-2 rounded-lg text-[10px] font-bold">SPONSOR</button>
-                    <button @click="adminAction('delete', app.id)" class="col-span-2 bg-red-600/20 text-red-400 py-2 rounded-lg text-[10px] font-bold mt-2">SİSTEMDEN SİL</button>
-                </div>
             </div>
+            
+            <button @click="addNewEmptyApp" class="border-2 border-dashed border-white/10 p-6 rounded-3xl opacity-40 hover:opacity-100 transition">
+                <i class="fas fa-plus mr-2"></i> Manuel Proje Ekle
+            </button>
         </div>
     </main>
 
-    <footer class="mt-40 p-10 border-t border-white/5 text-center">
-        <div class="flex justify-center gap-10 opacity-20 mb-8">
-            <i class="fab fa-android text-2xl"></i>
-            <i class="fab fa-apple text-2xl"></i>
-            <i class="fas fa-shield-alt text-2xl"></i>
-        </div>
-        <p @click="triggerAdmin" class="text-[10px] opacity-10 tracking-[5px] uppercase cursor-pointer hover:opacity-100 transition duration-1000">Dev/ByAltun LABS</p>
+    <footer class="p-20 text-center border-t border-white/5">
+        <p @click="adminEntry" class="text-[10px] opacity-10 tracking-[10px] uppercase cursor-pointer hover:opacity-100 transition duration-1000">Dev/ByAltun LABS</p>
     </footer>
 
 </div>
 
 <script>
-// --- GÜVENLİK PROTOKOLLERİ ---
-document.onkeydown = (e) => {
-    if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) {
-        window.location.href = "https://google.com";
-        return false;
-    }
-};
-
-setInterval(() => {
-    // (function(){debugger}()) // Debugger kapanı
-}, 100);
-
-const { createApp, ref, onMounted, computed } = Vue;
+const { createApp, ref, onMounted } = Vue;
 
 createApp({
     setup() {
         const WORKER_URL = "https://byaltunstore.byaltun4.workers.dev";
+        const isDark = ref(true);
         const view = ref('store');
         const adminKey = ref('');
-        const publicApps = ref([]);
-        const allApps = ref([]);
-        const announcement = ref('');
-        const newAnn = ref('');
-        const form = ref({ name: '', icon: '', apkUrl: '', devName: '', desc: '' });
+        const apps = ref([]);
+        const adminApps = ref([]);
+        const time = ref('');
+        const location = ref('Kyiv, UA');
+        const weather = ref({ temp: '--', desc: 'Loading' });
+
+        // Hava Durumu & Saat
+        const updateHeader = async () => {
+            time.value = new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+            try {
+                const res = await fetch('https://wttr.in/Kyiv?format=j1');
+                const data = await res.json();
+                weather.value = { temp: data.current_condition[0].temp_C, desc: data.current_condition[0].weatherDesc[0].value };
+            } catch(e) {}
+        };
 
         const sync = async () => {
             const res = await fetch(`${WORKER_URL}/sync`);
             const data = await res.json();
-            publicApps.value = data.apps;
-            announcement.value = data.announcement;
+            apps.value = data.apps;
         };
 
-        const triggerAdmin = () => {
-            const pass = prompt("ROOT_ACCESS_REQUIRED:");
-            if (pass == "ByAltunAdmin123!") {
+        const adminEntry = async () => {
+            const pass = prompt("ADMIN_PASS_KEY:");
+            if(pass === "ByAltunAdmin123!") {
                 adminKey.value = pass;
                 view.value = 'admin';
-                adminSync();
-            } else {
-                alert("ACCESS_DENIED");
+                const res = await fetch(`${WORKER_URL}/admin-all`, { headers: { "X-Admin-Key": pass } });
+                adminApps.value = await res.json();
             }
         };
 
-        const adminSync = async () => {
-            const res = await fetch(`${WORKER_URL}/admin-sync`, { headers: { "X-Admin-Key": adminKey.value } });
-            allApps.value = await res.json();
-        };
-
-        const adminAction = async (action, appId, payload = null) => {
-            await fetch(`${WORKER_URL}/admin-action`, {
+        const saveAdminChanges = async () => {
+            await fetch(`${WORKER_URL}/admin-save`, {
                 method: 'POST',
                 headers: { "X-Admin-Key": adminKey.value, "Content-Type": "application/json" },
-                body: JSON.stringify({ action, appId, payload })
+                body: JSON.stringify({ apps: adminApps.value })
             });
-            adminSync();
+            alert("Sistem Güncellendi!");
             sync();
-        };
-
-        const setAnnouncement = () => adminAction('set_announcement', null, newAnn.value);
-
-        const submitApp = async () => {
-            await fetch(`${WORKER_URL}/submit`, {
-                method: 'POST',
-                body: JSON.stringify(form.value)
-            });
-            alert("Uygulamanız ByAltun laboratuvarına gönderildi!");
-            form.value = { name: '', icon: '', apkUrl: '', devName: '', desc: '' };
             view.value = 'store';
         };
 
-        onMounted(sync);
+        const deleteApp = (id) => { adminApps.value = adminApps.value.filter(a => a.id !== id); };
+        const addNewEmptyApp = () => {
+            adminApps.value.push({ id: Date.now().toString(), name: 'Yeni Proje', devName: 'ByAltun', icon: '', apkUrl: '', desc: '', status: 'approved', isBoosted: false });
+        };
 
-        return { view, publicApps, allApps, announcement, newAnn, form, triggerAdmin, adminAction, setAnnouncement, submitApp };
+        onMounted(() => {
+            sync();
+            updateHeader();
+            setInterval(updateHeader, 60000);
+        });
+
+        return { isDark, view, apps, adminApps, time, location, weather, adminEntry, saveAdminChanges, deleteApp, addNewEmptyApp };
     }
 }).mount('#app');
 </script>
