@@ -1,279 +1,105 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BYALTUN APK PRO</title>
-
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-
-<style>
-body{transition:.3s}
-.dark{background:#020617;color:#f1f5f9}
-.light{background:#f8fafc;color:#0f172a}
-.glass{backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.1)}
-</style>
+<script src="https://unpkg.com/vue@3"></script>
 </head>
 
-<body>
-<div id="app" :class="isDark?'dark':'light'" class="min-h-screen">
+<body class="bg-black text-white">
 
-<!-- NAV -->
-<div class="p-4 flex justify-between items-center glass">
-<h1 class="font-black cursor-pointer" @click="view='store'">BYALTUN APK</h1>
-
-<div class="flex gap-2 items-center">
-<input v-model="search" placeholder="Ara..." class="px-2 py-1 rounded text-black">
-
-<button @click="isDark=!isDark">🌓</button>
-
-<button v-if="!user" @click="view='auth'" class="bg-green-500 text-white px-2 py-1 rounded">Giriş</button>
-
-<button v-if="user" @click="view='upload'" class="bg-green-500 text-white px-2 py-1 rounded">Yükle</button>
-
-<button v-if="user" @click="logout">Çıkış</button>
-</div>
-</div>
-
-<!-- MENU -->
-<div class="flex gap-3 p-3 text-sm">
-<button @click="setFilter('all')">Ana Sayfa</button>
-<button @click="setFilter('Oyun')">Oyunlar</button>
-<button @click="setFilter('Uygulama')">Uygulamalar</button>
-<button @click="setSort('top')">En Çok</button>
-<button @click="setSort('new')">Yeni</button>
-</div>
-
-<!-- ANN -->
-<div v-if="announcement" class="bg-green-500 text-white text-center p-2">
-{{announcement}}
-</div>
+<div id="app">
 
 <!-- STORE -->
 <div v-if="view=='store'" class="p-4">
 
-<h2 class="text-lg mb-3">🔥 Günün Uygulamaları</h2>
-
-<div class="grid grid-cols-2 gap-3 mb-6">
-<div v-for="a in todays" class="glass p-3 rounded">
-<img :src="a.icon" class="w-14 h-14">
-<h3>{{a.name}}</h3>
-<button @click="download(a)" class="bg-green-500 text-white px-2 py-1 mt-2">İndir</button>
-</div>
-</div>
-
-<div class="grid grid-cols-3 gap-3">
-<div v-for="a in filtered" class="glass p-3 rounded">
-<img :src="a.icon" class="w-12 h-12">
-<h3 class="text-sm">{{a.name}}</h3>
-<p class="text-xs opacity-50">{{a.category}}</p>
-<button @click="download(a)" class="bg-green-500 text-white px-2 py-1 mt-2">İndir</button>
+<div class="grid grid-cols-3 gap-4">
+<div v-for="a in apps" class="bg-gray-800 p-3 rounded cursor-pointer" @click="openApp(a)">
+<img :src="a.icon" class="w-16">
+<p>{{a.name}}</p>
 </div>
 </div>
 
 </div>
 
-<!-- AUTH -->
-<div v-if="view=='auth'" class="p-10 max-w-md mx-auto">
-<h2 class="text-xl mb-4">{{isReg?'Kayıt Ol':'Giriş'}}</h2>
+<!-- DETAIL -->
+<div v-if="view=='detail'" class="p-4">
 
-<input v-model="auth.email" placeholder="Email" class="w-full p-2 mb-2 text-black">
-<input v-model="auth.password" type="password" placeholder="Şifre" class="w-full p-2 mb-2 text-black">
+<button @click="view='store'">← Geri</button>
 
-<button @click="handleAuth" class="bg-green-500 text-white w-full p-2">
-{{isReg?'Kayıt Ol':'Giriş'}}
-</button>
+<h1 class="text-2xl">{{selected.name}}</h1>
+<img :src="selected.icon" class="w-20">
 
-<p @click="isReg=!isReg" class="mt-2 text-sm cursor-pointer">
-{{isReg?'Giriş yap':'Kayıt ol'}}
-</p>
+<p>{{selected.desc}}</p>
+
+<p>İndirme: {{selected.downloads}}</p>
+<p>Görüntülenme: {{selected.views}}</p>
+
+<button @click="download(selected)" class="bg-green-500 px-3 py-1">İndir</button>
+
+<!-- COMMENT -->
+<h2 class="mt-4">Yorumlar</h2>
+
+<div v-for="c in appComments">
+<p>{{c.text}}</p>
 </div>
 
-<!-- UPLOAD -->
-<div v-if="view=='upload'" class="p-6 max-w-xl mx-auto">
-
-<h2 class="text-lg mb-4">Uygulama Yükle</h2>
-
-<input v-model="form.name" placeholder="Ad" class="w-full p-2 mb-2 text-black">
-
-<select v-model="form.category" class="w-full p-2 mb-2 text-black">
-<option>Uygulama</option>
-<option>Oyun</option>
-</select>
-
-<input type="file" @change="upload($event,'icon')" class="mb-2">
-<input type="file" @change="upload($event,'screen')" class="mb-2">
-
-<input v-model="form.apkUrl" placeholder="APK Link" class="w-full p-2 mb-2 text-black">
-<input v-model="form.devName" placeholder="Geliştirici" class="w-full p-2 mb-2 text-black">
-
-<textarea v-model="form.desc" placeholder="Açıklama" class="w-full p-2 mb-2 text-black"></textarea>
-
-<button @click="submitApp" class="bg-green-500 text-white w-full p-2">
-Gönder
-</button>
-
-</div>
-
-<!-- ADMIN -->
-<div v-if="view=='admin'" class="p-6">
-
-<h2 class="text-xl mb-4">Admin Panel</h2>
-
-<input v-model="newAnn" placeholder="Duyuru" class="p-2 text-black">
-<button @click="updateAnn" class="bg-green-500 text-white p-2">Kaydet</button>
-
-<h3 class="mt-4">Bekleyenler</h3>
-
-<div v-for="a in pending" class="glass p-3 mt-2">
-{{a.name}}
-<button @click="approve(a)">Onayla</button>
-<button @click="reject(a)">Sil</button>
-</div>
+<input v-model="comment" placeholder="Yorum yaz">
+<button @click="sendComment">Gönder</button>
 
 </div>
 
 </div>
 
 <script>
-const {createApp,ref,computed,onMounted} = Vue;
+const {createApp,ref,computed,onMounted}=Vue;
 
 createApp({
 setup(){
 
 const API="https://byaltunstore.byaltun4.workers.dev";
 
-const isDark=ref(true);
-const view=ref('store');
-const user=ref(localStorage.getItem('user'));
-
-const search=ref('');
-const filter=ref('all');
-const sort=ref('new');
-
+const view=ref("store");
 const apps=ref([]);
-const adminApps=ref([]);
-
-const announcement=ref('');
-const newAnn=ref('');
-
-const auth=ref({email:'',password:''});
-const isReg=ref(false);
-
-const form=ref({name:'',icon:'',screen:'',apkUrl:'',devName:'',desc:'',category:'Uygulama'});
+const selected=ref(null);
+const comments=ref([]);
+const comment=ref("");
 
 const sync=async()=>{
-const r=await fetch(API+'/sync');
+const r=await fetch(API+"/sync");
 const d=await r.json();
 apps.value=d.apps;
-announcement.value=d.announcement;
+comments.value=d.comments;
 };
 
-const handleAuth=async()=>{
-const r=await fetch(API+'/auth',{
-method:'POST',
-body:JSON.stringify({...auth.value,action:isReg.value?'register':'login'})
-});
-const d=await r.json();
+const openApp=async(a)=>{
+selected.value=a;
+view.value="detail";
 
-if(d.token){
-user.value=auth.value.email;
-localStorage.setItem('user',auth.value.email);
-view.value='store';
-}else alert(d.error||"Hata");
+await fetch(API+"/view",{method:"POST",body:JSON.stringify({id:a.id})});
 };
 
-const upload=(e,t)=>{
-const f=e.target.files[0];
-const r=new FileReader();
-r.onload=x=>form.value[t]=x.target.result;
-r.readAsDataURL(f);
-};
-
-const submitApp=async()=>{
-await fetch(API+'/submit',{method:'POST',body:JSON.stringify(form.value)});
-alert("Onaya gönderildi");
-view.value='store';
-sync();
-};
-
-const adminLogin=async()=>{
-const pass=prompt("Admin şifre");
-if(pass==="ByAltunAdmin123!"){
-const r=await fetch(API+'/admin-all',{headers:{"X-Admin-Key":pass}});
-adminApps.value=await r.json();
-localStorage.setItem('admin',pass);
-view.value='admin';
-}
-};
-
-const approve=async(a)=>{
-a.status='approved';
-await saveAdmin();
-};
-
-const reject=async(a)=>{
-adminApps.value=adminApps.value.filter(x=>x.id!==a.id);
-await saveAdmin();
-};
-
-const saveAdmin=async()=>{
-await fetch(API+'/admin-action',{
-method:'POST',
-headers:{"X-Admin-Key":localStorage.getItem('admin')},
-body:JSON.stringify({action:'save',payload:adminApps.value})
-});
-sync();
-};
-
-const updateAnn=async()=>{
-await fetch(API+'/admin-action',{
-method:'POST',
-headers:{"X-Admin-Key":localStorage.getItem('admin')},
-body:JSON.stringify({announcement:newAnn.value})
-});
-alert("Güncellendi");
-sync();
-};
-
-const download=(a)=>{
+const download=async(a)=>{
+await fetch(API+"/download",{method:"POST",body:JSON.stringify({id:a.id})});
 window.open(a.apkUrl);
 };
 
-const filtered=computed(()=>{
-let r=apps.value.filter(a=>
-(filter.value=='all'||a.category==filter.value)
-&& a.name.toLowerCase().includes(search.value.toLowerCase())
-);
-if(sort.value=='top') r.sort((a,b)=>b.downloads-a.downloads);
-return r;
-});
-
-const todays=computed(()=>apps.value.slice(0,2));
-const pending=computed(()=>adminApps.value.filter(a=>a.status=='pending'));
-
-const setFilter=(c)=>filter.value=c;
-const setSort=(s)=>sort.value=s;
-
-const logout=()=>{
-localStorage.clear();
-location.reload();
+const sendComment=async()=>{
+await fetch(API+"/comment",{method:"POST",body:JSON.stringify({
+appId:selected.value.id,
+text:comment.value
+})});
+comment.value="";
+sync();
 };
+
+const appComments=computed(()=>comments.value.filter(c=>c.appId==selected.value?.id));
 
 onMounted(sync);
 
-return{
-isDark,view,user,search,filter,sort,
-apps,adminApps,announcement,newAnn,
-auth,isReg,form,
-handleAuth,upload,submitApp,
-adminLogin,approve,reject,updateAnn,
-filtered,todays,pending,
-setFilter,setSort,logout,download
+return{apps,view,selected,openApp,download,comments,comment,sendComment,appComments};
 }
-}
-}).mount('#app');
+}).mount("#app");
 </script>
 
 </body>
