@@ -3,130 +3,180 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>dev/ /ByAltun </title>
+    <title>ByAltun | Digital Architecture & Labs</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;400;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=Inter:wght@900&display=swap');
         
-        body { 
-            margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif;
-            background: #000; color: #fff; overflow-x: hidden; transition: 1s ease;
-        }
-
-        /* Dinamik Hava Durumu Katmanları */
-        #weather-overlay {
-            position: fixed; top:0; left:0; width:100%; height:100%; z-index: -1; pointer-events: none;
-        }
-
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(30px) saturate(150%);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 40px;
-        }
-
-        .flag-img { width: 22px; height: 14px; border-radius: 2px; }
-
-        /* Yağmur Efekti */
-        .rain { position: absolute; background: white; width: 1px; height: 20px; opacity: 0.2; }
-
-        /* Güneş Parlaması */
-        .sun-glow {
-            position: absolute; top: -10%; right: -10%; width: 600px; height: 600px;
-            background: radial-gradient(circle, rgba(255,180,0,0.15) 0%, transparent 70%);
-            border-radius: 50%; filter: blur(50px);
-        }
-
+        :root { --p: #6366f1; --accent: #8b5cf6; }
+        body { background: #000; color: #fff; font-family: 'Space Grotesk', sans-serif; overflow-x: hidden; cursor: crosshair; }
+        
         [v-cloak] { display: none; }
+
+        /* Arka Plan Cam Efekti */
+        .glass { background: rgba(255,255,255,0.02); backdrop-filter: blur(40px); border: 1px solid rgba(255,255,255,0.08); }
+        .glass-hover:hover { background: rgba(255,255,255,0.05); border-color: var(--p); transform: translateY(-5px); transition: 0.4s; }
+
+        /* Neon Glow Animasyonu */
+        .neon-text { text-shadow: 0 0 20px rgba(99, 102, 241, 0.5); }
+        
+        /* Hava Durumu Efektleri */
+        #weather-layer { position: fixed; inset: 0; pointer-events: none; z-index: 1; }
+        .snow { position: absolute; background: white; border-radius: 50%; opacity: 0.6; animation: fall linear infinite; }
+        @keyframes fall { to { transform: translateY(100vh); } }
+
+        /* Scroll Bar */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: var(--p); border-radius: 10px; }
+
+        /* Bento Grid Custom */
+        .bento-main { grid-template-rows: repeat(2, minmax(300px, auto)); }
     </style>
 </head>
-<body>
-    <div id="weather-overlay"></div>
+<body class="antialiased">
+    <div id="weather-layer"></div>
 
-    <div id="app" v-cloak>
-        <nav class="p-6 flex justify-between items-center max-w-7xl mx-auto relative z-10">
-            <div class="flex items-center gap-4 glass-panel px-6 py-3">
-                <span class="text-2xl font-black italic tracking-tighter">ByAltun</span>
-                <div class="h-4 w-[1px] bg-white/20 mx-2"></div>
-                <div class="flex flex-col text-[10px] uppercase tracking-widest opacity-60 font-bold">
+    <div id="app" v-cloak class="relative z-10">
+        
+        <nav class="fixed top-0 w-full p-4 flex justify-between items-center z-50 px-6 md:px-12 bg-black/50 backdrop-blur-md">
+            <div class="flex items-center gap-6">
+                <div class="text-2xl font-black italic tracking-tighter neon-text">ByAltun</div>
+                <div class="hidden md:flex gap-4 text-[10px] uppercase tracking-[3px] opacity-40">
                     <span>{{ currentTime }}</span>
-                    <span>{{ city }} / {{ weatherDesc }} {{ temp }}°C</span>
+                    <span class="text-indigo-500 font-bold">{{ city }} / {{ temp }}°C</span>
                 </div>
             </div>
 
-            <div class="flex gap-2 glass-panel p-2">
-                <button v-for="(l, code) in languages" @click="currentLang = code" 
-                        class="p-2 rounded-xl transition flex items-center gap-2 text-[10px] font-black"
-                        :class="currentLang === code ? 'bg-white/10' : 'opacity-30 hover:opacity-100'">
-                    <img :src="l.flag" class="flag-img"> {{ code.toUpperCase() }}
+            <div class="flex items-center gap-3 glass p-1.5 rounded-2xl">
+                <button v-for="(l, code) in languages" @click="changeLang(code)" 
+                        class="px-3 py-1.5 rounded-xl text-[10px] font-bold transition-all"
+                        :class="currentLang === code ? 'bg-indigo-600 text-white shadow-lg' : 'opacity-40 hover:opacity-100'">
+                    <img :src="l.flag" class="w-4 h-3 inline mr-1 rounded-sm"> {{ code.toUpperCase() }}
                 </button>
             </div>
         </nav>
 
-        <header class="min-h-[70vh] flex flex-col justify-center px-10 max-w-7xl mx-auto">
-            <div class="inline-block glass-panel px-4 py-1 text-[10px] tracking-[6px] uppercase opacity-50 mb-8 w-fit">
+        <header class="min-h-screen flex flex-col justify-center items-center text-center px-6 pt-20">
+            <div class="glass px-6 py-2 rounded-full text-[10px] tracking-[8px] uppercase mb-8 border-indigo-500/30 text-indigo-400">
                 {{ t.status }}
             </div>
-            <h1 class="text-[clamp(3rem,12vw,10rem)] font-extrabold leading-[0.8] tracking-tighter mb-10">
-                STAY<br><span class="opacity-20 italic">AHEAD.</span>
+            <h1 class="text-[12vw] md:text-[10vw] font-black leading-none tracking-tighter mb-8 font-['Inter']">
+                BEYOND<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">LIMITS.</span>
             </h1>
-            <p class="text-lg md:text-2xl max-w-2xl opacity-40 leading-relaxed font-light">
-                {{ t.heroSub }}
-            </p>
+            <div class="flex flex-col md:flex-row gap-6 items-center">
+                <p class="text-lg md:text-xl opacity-40 max-w-xl font-light italic">
+                   "{{ t.heroQuote }}"
+                </p>
+                <div class="h-10 w-[1px] bg-indigo-500/30 hidden md:block"></div>
+                <div class="flex gap-4">
+                    <i class="fab fa-android text-2xl opacity-20"></i>
+                    <i class="fab fa-apple text-2xl opacity-20"></i>
+                    <i class="fas fa-microchip text-2xl opacity-20"></i>
+                </div>
+            </div>
         </header>
 
-        <main class="grid grid-cols-1 md:grid-cols-12 gap-6 p-6 max-w-[1600px] mx-auto">
+        <section class="max-w-[1400px] mx-auto px-6 grid grid-cols-1 md:grid-cols-12 gap-6 pb-40">
             
-            <div class="md:col-span-8 glass-panel p-12 flex flex-col justify-between group min-h-[500px] relative overflow-hidden">
+            <div class="md:col-span-8 glass glass-hover p-10 md:p-16 rounded-[3.5rem] flex flex-col justify-between relative overflow-hidden group">
                 <div class="relative z-10">
-                    <div class="w-20 h-20 bg-amber-500 rounded-[2rem] flex items-center justify-center mb-10 rotate-12 group-hover:rotate-0 transition-all duration-700">
-                        <i class="fas fa-kaaba text-4xl text-black"></i>
+                    <div class="flex justify-between items-start">
+                        <div class="w-24 h-24 bg-gradient-to-br from-amber-400 to-amber-700 rounded-[2.5rem] flex items-center justify-center shadow-2xl rotate-12 group-hover:rotate-0 transition-all duration-700">
+                            <i class="fas fa-kaaba text-5xl text-black"></i>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-[10px] tracking-widest opacity-30 uppercase">Ver 2.0 / Stable</span>
+                        </div>
                     </div>
-                    <h2 class="text-6xl font-black italic mb-6">MİKAT</h2>
-                    <p class="text-xl opacity-50 max-w-lg">{{ t.mikatDesc }}</p>
+                    <h2 class="text-7xl font-black italic mt-12 mb-6 tracking-tighter">MİKAT</h2>
+                    <p class="text-2xl opacity-50 max-w-xl leading-relaxed">{{ t.mikatDesc }}</p>
                 </div>
-                <div class="flex justify-between items-end relative z-10">
-                    <div class="text-xs opacity-20 uppercase tracking-[4px]">Precision / Spiritual / Mobile</div>
-                    <a href="https://byaltun4.github.io/mikat/index.html" class="bg-white text-black px-12 py-5 rounded-2xl font-black hover:scale-105 transition">{{ t.btn }}</a>
+                <div class="mt-20 flex flex-wrap gap-4 relative z-10">
+                    <a href="https://byaltun4.github.io/mikat/index.html" class="bg-white text-black px-10 py-5 rounded-2xl font-black text-sm hover:scale-105 active:scale-95 transition">{{ t.btnVisit }}</a>
+                    <div class="flex items-center gap-2 glass px-6 py-4 rounded-2xl text-xs font-bold opacity-60">
+                        <i class="fas fa-location-arrow text-indigo-500"></i> GEO-SYNC ACTIVE
+                    </div>
                 </div>
-                <div class="absolute -right-20 -bottom-20 text-[20rem] opacity-[0.02] font-black italic -rotate-12">PRAY</div>
+                <div class="absolute -right-10 -bottom-10 text-[25rem] font-black opacity-[0.02] select-none pointer-events-none italic">99</div>
             </div>
 
-            <div class="md:col-span-4 glass-panel p-10 flex flex-col justify-between border-emerald-500/20">
-                <div class="w-16 h-16 bg-emerald-500 rounded-2xl flex items-center justify-center">
-                    <i class="fas fa-paw text-3xl text-white"></i>
-                </div>
+            <div class="md:col-span-4 glass glass-hover p-10 rounded-[3.5rem] border-emerald-500/20 flex flex-col justify-between">
                 <div>
-                    <h2 class="text-4xl font-black mb-4 uppercase">PAWPAL</h2>
-                    <p class="opacity-40 leading-relaxed">{{ t.pawpalDesc }}</p>
+                    <div class="w-16 h-16 bg-emerald-500 rounded-2xl flex items-center justify-center mb-10 shadow-lg shadow-emerald-500/20">
+                        <i class="fas fa-paw text-3xl text-white"></i>
+                    </div>
+                    <h2 class="text-4xl font-black mb-6">PAWPAL</h2>
+                    <p class="opacity-40 leading-relaxed text-lg">{{ t.pawpalDesc }}</p>
                 </div>
-                <a href="https://byaltun4.github.io/pawpal/" class="py-4 border border-white/10 rounded-2xl text-center font-bold hover:bg-white hover:text-black transition uppercase text-xs tracking-widest">{{ t.btn }}</a>
+                <a href="https://byaltun4.github.io/pawpal/" class="mt-12 py-5 border border-white/10 rounded-2xl text-center font-bold hover:bg-white hover:text-black transition uppercase tracking-widest text-xs">{{ t.btnVisit }}</a>
             </div>
 
-            <div class="md:col-span-12 glass-panel p-12 bg-gradient-to-r from-blue-900/20 to-transparent flex flex-col md:flex-row items-center gap-12">
-                <div class="w-40 h-40 bg-blue-600 rounded-[3rem] flex items-center justify-center shadow-2xl shrink-0">
-                    <i class="fas fa-faucet-drip text-7xl text-white"></i>
+            <div class="md:col-span-12 glass glass-hover p-12 rounded-[3.5rem] flex flex-col md:flex-row items-center gap-16 bg-gradient-to-tr from-indigo-900/10 to-transparent">
+                <div class="relative">
+                    <div class="w-48 h-48 bg-blue-600 rounded-[3.5rem] flex items-center justify-center shadow-3xl">
+                        <i class="fas fa-droplet text-8xl text-white"></i>
+                    </div>
+                    <div class="absolute -top-4 -right-4 bg-red-500 text-[10px] font-black px-3 py-1 rounded-full animate-pulse">LIVE TRACKING</div>
                 </div>
                 <div class="flex-1">
-                    <h2 class="text-5xl font-black mb-4">INVER WATER</h2>
-                    <p class="text-xl opacity-40 max-w-4xl">{{ t.inverDesc }}</p>
+                    <h2 class="text-5xl md:text-7xl font-black mb-6 tracking-tighter">INVER WATER</h2>
+                    <p class="text-xl opacity-40 max-w-3xl mb-10">{{ t.inverDesc }}</p>
+                    <div class="flex gap-6">
+                        <a href="https://inver2-ops.github.io/" class="px-12 py-5 bg-indigo-600 rounded-2xl font-black hover:shadow-[0_0_40px_rgba(99,102,241,0.4)] transition">{{ t.btnVisit }}</a>
+                        <div class="hidden md:flex flex-col justify-center">
+                            <span class="text-[10px] opacity-20 uppercase tracking-widest">Service Area</span>
+                            <span class="text-xs font-bold">KYIV REGION / UA</span>
+                        </div>
+                    </div>
                 </div>
-                <a href="https://inver2-ops.github.io/" class="px-12 py-6 bg-blue-600 rounded-2xl font-black hover:shadow-[0_0_50px_rgba(37,99,235,0.4)] transition">{{ t.btn }}</a>
             </div>
 
-        </main>
+        </section>
 
-        <footer class="mt-32 p-10 text-center">
-            <div class="max-w-4xl mx-auto glass-panel p-16 border-white/5 group hover:border-white/20 transition">
-                <p class="text-xs tracking-[10px] opacity-30 mb-10 uppercase">{{ t.contactHead }}</p>
-                <a href="mailto:altun4@gmail.com" class="text-3xl md:text-6xl font-black tracking-tighter hover:text-blue-500 transition break-all">
-                    altun4@gmail.com
-                </a>
+        <section class="max-w-4xl mx-auto px-6 mb-40">
+            <div class="glass rounded-3xl overflow-hidden border-white/5">
+                <div class="bg-white/5 p-4 flex gap-2 border-b border-white/5">
+                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+                    <span class="text-[10px] ml-4 opacity-30 font-mono">system_v3.0.sh — byaltun@kyiv</span>
+                </div>
+                <div class="p-8 font-mono text-sm text-indigo-300">
+                    <p class="mb-2 text-white">> Initializing ByAltun Core...</p>
+                    <p class="mb-2">> Status: <span class="text-emerald-400">Online</span></p>
+                    <p class="mb-2">> Location: {{ city }}</p>
+                    <p class="mb-2">> Temp: {{ temp }}°C ({{ weatherDesc }})</p>
+                    <p class="mb-4">> Loaded_Apps: [Mikat, PawPal, InverWater]</p>
+                    <div class="flex gap-2">
+                        <span class="text-emerald-500">➜</span>
+                        <span class="text-white animate-pulse">_</span>
+                    </div>
+                </div>
             </div>
-            <div class="mt-20 text-[10px] tracking-[8px] opacity-20 font-bold uppercase italic">
-                ByAltun / KYIV STUDIO / MMXXVI
+        </section>
+
+        <footer class="pb-20 px-6">
+            <div class="max-w-5xl mx-auto glass p-20 rounded-[4rem] text-center relative overflow-hidden group">
+                <h2 class="text-5xl md:text-8xl font-black mb-12 tracking-tighter">{{ t.contactTitle }}</h2>
+                <div class="relative z-10">
+                    <a href="mailto:altun4@gmail.com" class="text-2xl md:text-5xl font-bold text-indigo-500 hover:text-white transition break-all underline decoration-2 underline-offset-8">
+                        altun4@gmail.com
+                    </a>
+                </div>
+                <div class="absolute inset-0 bg-gradient-to-b from-indigo-600/5 to-transparent opacity-0 group-hover:opacity-100 transition duration-1000"></div>
+            </div>
+            
+            <div class="mt-32 flex flex-col md:flex-row justify-between items-center opacity-20 text-[10px] tracking-[5px] uppercase font-bold max-w-7xl mx-auto">
+                <div>&copy; 2026 BYALTUN LABS</div>
+                <div class="my-4 md:my-0">Coded in Kyiv with Precision</div>
+                <div class="flex gap-6">
+                    <i class="fab fa-github"></i>
+                    <i class="fab fa-linkedin"></i>
+                </div>
             </div>
         </footer>
     </div>
@@ -138,32 +188,52 @@
             setup() {
                 const currentLang = ref('tr');
                 const city = ref('Kyiv');
-                const temp = ref('22');
-                const weatherDesc = ref('Sunny');
+                const temp = ref('--');
+                const weatherDesc = ref('Loading');
                 const currentTime = ref('');
 
                 const languages = {
-                    tr: { flag: 'https://flagcdn.com/tr.svg', status: 'DİJİTAL ATÖLYE', heroSub: 'Geleceğin standartlarını bugün, en ince detayına kadar kodlayarak inşa ediyoruz.', mikatDesc: 'Geleneksel değerleri modern teknolojiyle buluşturan, yüksek hassasiyetli dini rehber.', pawpalDesc: 'Evcil hayvan bakımında zekayı ve şefkati birleştiren akıllı asistan.', inverDesc: 'Kyiv için hayati altyapı verilerini ve finansal nabzı tutan entegre platform.', btn: 'KEŞFET', contactHead: 'BİZE ULAŞIN' },
-                    en: { flag: 'https://flagcdn.com/us.svg', status: 'DIGITAL ATELIER', heroSub: 'Building tomorrow\'s standards today by coding down to the finest detail.', mikatDesc: 'A high-precision spiritual guide blending traditional values with modern tech.', pawpalDesc: 'A smart assistant combining intelligence and compassion in pet care.', inverDesc: 'Integrated platform for real-time infrastructure and financial data in Kyiv.', btn: 'EXPLORE', contactHead: 'GET IN TOUCH' },
-                    ua: { flag: 'https://flagcdn.com/ua.svg', status: 'ЦИФРОВА МАЙСТЕРНЯ', heroSub: 'Будуємо стандарти завтрашнього дня вже сьогодні.', mikatDesc: 'Високоточний духовний гід, що поєднує традиції та технології.', pawpalDesc: 'Розумний помічник для догляду за вашими улюбленцями.', inverDesc: 'Платформа для моніторингу інфраструктури та фінансів Києва.', btn: 'ВІДКРИТИ', contactHead: 'ЗВ\'ЯЖІТЬСЯ' },
-                    ru: { flag: 'https://flagcdn.com/ru.svg', status: 'ЦИФРОВАЯ МАСТЕРСКАЯ', heroSub: 'Строим стандарты завтрашнего дня уже сегодня.', mikatDesc: 'Высокоточный духовный гид, сочетающий традиции и технологии.', pawpalDesc: 'Умный помощник для ухода за вашими питомцами.', inverDesc: 'Платформа для мониторинга инфраструктуры и финансов Киева.', btn: 'ОТКРЫТЬ', contactHead: 'СВЯЗАТЬСЯ' }
+                    tr: { 
+                        flag: 'https://flagcdn.com/tr.svg', status: 'SİSTEM ÇALIŞIYOR', 
+                        heroQuote: 'Karmaşıklığı basitliğe dönüştüren dijital zanaatkarlık.',
+                        mikatDesc: 'Modern ruh için tasarlanmış, en yüksek hassasiyetli dini asistan ve vakit rehberi.',
+                        pawpalDesc: 'Evcil dostlarınızın hayatını kolaylaştıran yapay zeka destekli sağlık ve bakım paneli.',
+                        inverDesc: 'Kyiv şehrinin altyapı nabzını tutan, su ve finans verilerini anlık sunan dev platform.',
+                        btnVisit: 'SİSTEME GİR', contactTitle: 'BİZİMLE ÇALIŞIN' 
+                    },
+                    en: { 
+                        flag: 'https://flagcdn.com/us.svg', status: 'SYSTEM ACTIVE', 
+                        heroQuote: 'Digital craftsmanship that turns complexity into simplicity.',
+                        mikatDesc: 'High-precision spiritual assistant and time guide designed for the modern soul.',
+                        pawpalDesc: 'AI-powered health and care dashboard making life easier for your furry friends.',
+                        inverDesc: 'Integrated platform monitoring Kyiv\'s infrastructure, water, and financial pulse.',
+                        btnVisit: 'ACCESS SYSTEM', contactTitle: 'LET\'S BUILD' 
+                    },
+                    ua: { 
+                        flag: 'https://flagcdn.com/ua.svg', status: 'СИСТЕМА АКТИВНА', 
+                        heroQuote: 'Цифрова майстерність, що перетворює складність на простоту.',
+                        mikatDesc: 'Високоточний духовний помічник та гід по часу, розроблений для сучасної душі.',
+                        pawpalDesc: 'Панель догляду та здоров’я на базі ШІ, що полегшує життя вашим улюбленцям.',
+                        inverDesc: 'Інтегрована платформа для моніторингу інфраструктури, води та фінансів Києва.',
+                        btnVisit: 'ВІДКРИТИ', contactTitle: 'ЗВ’ЯЖІТЬСЯ' 
+                    },
+                    ru: { 
+                        flag: 'https://flagcdn.com/ru.svg', status: 'СИСТЕМА АКТИВНА', 
+                        heroQuote: 'Цифровое мастерство, превращающее сложность в простоту.',
+                        mikatDesc: 'Высокоточный духовный помощник и гид по времени, созданный для современной души.',
+                        pawpalDesc: 'Панель здоровья и ухода на базе ИИ, облегчающая жизнь вашим питомцам.',
+                        inverDesc: 'Интегрированная платформа для мониторинга инфраструктуры, воды и финансов Киева.',
+                        btnVisit: 'ОТКРЫТЬ', contactTitle: 'СВЯЗАТЬСЯ' 
+                    }
                 };
 
                 const t = computed(() => languages[currentLang.value]);
 
-                // Hava Durumu ve Zaman Motoru
-                const updateApp = () => {
-                    const now = new Date();
-                    currentTime.value = now.toLocaleTimeString();
-                    
-                    // Saate göre tema değiştir
-                    const hour = now.getHours();
-                    const overlay = document.getElementById('weather-overlay');
-                    if(hour > 19 || hour < 6) {
-                        document.body.style.background = "#00050a"; // Gece
-                    } else {
-                        document.body.style.background = "#050505"; // Gündüz
-                    }
+                const changeLang = (code) => {
+                    gsap.to("#app", { opacity: 0, duration: 0.3, onComplete: () => {
+                        currentLang.value = code;
+                        gsap.to("#app", { opacity: 1, duration: 0.5 });
+                    }});
                 };
 
                 const getWeatherData = async () => {
@@ -173,35 +243,37 @@
                         temp.value = data.current_condition[0].temp_C;
                         weatherDesc.value = data.current_condition[0].weatherDesc[0].value;
                         
-                        // Hava durumuna göre efekt ekle
-                        if(weatherDesc.value.toLowerCase().includes('rain')) {
-                            createRain();
-                        } else if(weatherDesc.value.toLowerCase().includes('sun')) {
-                            const sun = document.createElement('div');
-                            sun.className = 'sun-glow';
-                            document.getElementById('weather-overlay').appendChild(sun);
-                        }
-                    } catch (e) { console.log("Hava durumu alınamadı."); }
+                        if(weatherDesc.value.toLowerCase().includes('snow')) createWeatherEffect('snow');
+                        if(weatherDesc.value.toLowerCase().includes('rain')) createWeatherEffect('rain');
+                    } catch (e) { console.error("Weather data failed"); }
                 };
 
-                const createRain = () => {
-                    const container = document.getElementById('weather-overlay');
-                    for(let i=0; i<100; i++) {
-                        const drop = document.createElement('div');
-                        drop.className = 'rain';
-                        drop.style.left = Math.random() * 100 + 'vw';
-                        drop.style.animationDuration = (Math.random() * 1 + 0.5) + 's';
-                        drop.style.top = Math.random() * 100 + 'vh';
-                        container.appendChild(drop);
+                const createWeatherEffect = (type) => {
+                    const layer = document.getElementById('weather-layer');
+                    for(let i=0; i<50; i++) {
+                        const el = document.createElement('div');
+                        el.className = type;
+                        el.style.left = Math.random() * 100 + 'vw';
+                        el.style.width = type === 'snow' ? Math.random() * 4 + 'px' : '1px';
+                        el.style.height = type === 'snow' ? el.style.width : '20px';
+                        el.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                        el.style.animationDelay = Math.random() * 5 + 's';
+                        layer.appendChild(el);
                     }
                 };
 
                 onMounted(() => {
-                    setInterval(updateApp, 1000);
                     getWeatherData();
+                    setInterval(() => {
+                        currentTime.value = new Date().toLocaleTimeString();
+                    }, 1000);
+
+                    // GSAP Entrance Animations
+                    gsap.from("h1", { y: 100, opacity: 0, duration: 1.5, ease: "power4.out", delay: 0.5 });
+                    gsap.from(".glass", { scale: 0.9, opacity: 0, duration: 1, stagger: 0.2, ease: "power2.out" });
                 });
 
-                return { currentLang, languages, t, city, temp, weatherDesc, currentTime };
+                return { currentLang, languages, t, city, temp, weatherDesc, currentTime, changeLang };
             }
         }).mount('#app');
     </script>
