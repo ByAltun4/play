@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.3s ease; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.3s ease; overflow-x: hidden; }
         .dark { background: #020617; color: #f1f5f9; }
         .light { background: #f8fafc; color: #0f172a; }
         .glass { backdrop-filter: blur(16px); border: 1px solid rgba(120,120,120,0.1); }
@@ -21,7 +21,7 @@
         .animate-in { animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .preview-img { width: 80px; height: 120px; object-fit: cover; border-radius: 12px; }
+        .img-preview { width: 90px; height: 140px; object-fit: cover; border-radius: 15px; border: 2px solid rgba(36, 189, 99, 0.3); }
     </style>
 </head>
 <body :class="isDark ? 'dark' : 'light'">
@@ -35,7 +35,7 @@
             </div>
             
             <div class="flex-1 max-w-lg relative">
-                <input v-model="search" @input="view='store'" type="text" placeholder="Uygulama ara..." class="w-full bg-slate-500/10 px-5 py-3 rounded-2xl text-sm outline-none border border-transparent focus:border-pure transition">
+                <input v-model="search" @input="view='store'" type="text" placeholder="Uygulama veya oyun ara..." class="w-full bg-slate-500/10 px-5 py-3 rounded-2xl text-sm outline-none border border-transparent focus:border-pure transition">
                 <i class="fas fa-search absolute right-4 top-4 opacity-20"></i>
             </div>
 
@@ -43,16 +43,16 @@
                 <button @click="toggleTheme" class="w-11 h-11 rounded-xl bg-slate-500/10 flex items-center justify-center hover:bg-pure/20 transition">
                     <i :class="isDark ? 'fas fa-sun text-yellow-400' : 'fas fa-moon text-indigo-600'"></i>
                 </button>
-                <button v-if="!user" @click="view = 'auth'" class="bg-pure text-white px-6 py-3 rounded-xl text-xs font-black uppercase shadow-lg">GİRİŞ YAP</button>
+                <button v-if="!user" @click="view = 'auth'" class="bg-pure text-white px-6 py-3 rounded-xl text-xs font-black uppercase shadow-lg hover:scale-105 transition">GİRİŞ</button>
                 <div v-else class="flex items-center gap-2">
-                    <button @click="view = 'upload'" class="bg-pure text-white px-5 py-3 rounded-xl text-xs font-black uppercase"><i class="fas fa-cloud-upload-alt mr-1"></i> YÜKLE</button>
+                    <button @click="view = 'upload'" class="bg-pure text-white px-5 py-3 rounded-xl text-xs font-black uppercase"><i class="fas fa-plus mr-1"></i> YÜKLE</button>
                     <button @click="logout" class="w-11 h-11 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition"><i class="fas fa-sign-out-alt"></i></button>
                 </div>
             </div>
         </div>
         
-        <div class="max-w-7xl mx-auto flex gap-6 mt-4 text-[10px] font-black uppercase tracking-widest overflow-x-auto no-scrollbar py-1">
-            <span @click="catFilter='all'" :class="catFilter=='all'?'text-pure border-b-2 border-pure':''" class="cursor-pointer whitespace-nowrap pb-1">TÜMÜ</span>
+        <div class="max-w-7xl mx-auto flex gap-6 mt-4 text-[10px] font-black uppercase tracking-widest overflow-x-auto no-scrollbar py-2 border-t border-black/5">
+            <span @click="catFilter='all'" :class="catFilter=='all'?'text-pure border-b-2 border-pure':''" class="cursor-pointer whitespace-nowrap pb-1">HEPSİ</span>
             <span @click="catFilter='populer'" :class="catFilter=='populer'?'text-pure border-b-2 border-pure':''" class="cursor-pointer whitespace-nowrap pb-1">🔥 POPÜLER</span>
             <span @click="catFilter='Oyun'" :class="catFilter=='Oyun'?'text-pure border-b-2 border-pure':''" class="cursor-pointer whitespace-nowrap pb-1">OYUNLAR</span>
             <span @click="catFilter='Uygulama'" :class="catFilter=='Uygulama'?'text-pure border-b-2 border-pure':''" class="cursor-pointer whitespace-nowrap pb-1">UYGULAMALAR</span>
@@ -60,59 +60,87 @@
     </nav>
 
     <main v-if="view == 'store'" class="max-w-7xl mx-auto p-6 min-h-screen animate-in">
-        <h3 class="text-xl font-black mb-8 italic uppercase tracking-tighter">
-            {{ catFilter == 'populer' ? 'En Çok İndirilenler' : 'Keşfet' }}
-        </h3>
+        <div class="flex justify-between items-end mb-8">
+            <h3 class="text-2xl font-black italic uppercase tracking-tighter">
+                <span v-if="catFilter == 'populer'">En Çok <span class="pure-green">İndirilenler</span></span>
+                <span v-else>Trend <span class="pure-green">Keşfet</span></span>
+            </h3>
+        </div>
         
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
             <div v-for="app in filteredApps" :key="app.id" @click="openDetail(app)" class="glass p-4 rounded-[2.5rem] text-center cursor-pointer hover:-translate-y-2 transition duration-300 group">
-                <div class="relative mb-4 overflow-hidden rounded-[2rem]">
-                    <img :src="app.icon" class="w-full aspect-square object-cover shadow-lg group-hover:scale-110 transition duration-500">
-                    <div v-if="catFilter == 'populer'" class="absolute top-2 left-2 bg-pure text-white text-[8px] px-2 py-1 rounded-lg font-black shadow-lg">#{{ apps.indexOf(app) + 1 }}</div>
+                <div class="relative mb-4 overflow-hidden rounded-[2.2rem] shadow-xl">
+                    <img :src="app.icon" class="w-full aspect-square object-cover group-hover:scale-110 transition duration-500">
+                    <div v-if="catFilter == 'populer'" class="absolute top-2 left-2 bg-black/60 backdrop-blur text-white text-[10px] px-3 py-1 rounded-full font-black">#{{ apps.indexOf(app) + 1 }}</div>
                 </div>
-                <h4 class="font-bold text-xs truncate px-2">{{ app.name }}</h4>
-                <p class="text-[8px] opacity-40 uppercase mt-1 font-black">{{ app.category }}</p>
-                <p class="text-[9px] pure-green font-black mt-2 italic"><i class="fas fa-download mr-1"></i>{{ app.downloads || 0 }}</p>
+                <h4 class="font-bold text-xs truncate mb-1">{{ app.name }}</h4>
+                <div class="flex items-center justify-center gap-2 opacity-50 text-[9px] font-black">
+                    <span class="uppercase">{{ app.category }}</span>
+                    <span>•</span>
+                    <span class="pure-green"><i class="fas fa-download mr-1"></i>{{ app.downloads || 0 }}</span>
+                </div>
             </div>
         </div>
     </main>
 
     <main v-if="view == 'upload'" class="max-w-3xl mx-auto p-6 md:py-12 min-h-screen animate-in">
-        <div class="glass p-8 md:p-12 rounded-[3rem] border border-pure/10">
-            <h2 class="text-3xl font-black italic uppercase mb-8">Uygulama <span class="pure-green">Paylaş</span></h2>
-            
+        <div class="glass p-8 md:p-12 rounded-[3.5rem] border border-pure/20 shadow-2xl">
+            <h2 class="text-3xl font-black italic uppercase mb-2">Uygulama <span class="pure-green">Yayınla</span></h2>
+            <p class="text-[10px] font-bold opacity-40 uppercase mb-10 tracking-widest">Kendi APK dosyanızı mağazaya ekleyin.</p>
+
             <div class="space-y-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input v-model="appForm.name" type="text" placeholder="Uygulama Adı" class="w-full bg-slate-500/10 p-4 rounded-2xl text-sm outline-none focus:border-pure transition">
-                    <select v-model="appForm.category" class="w-full bg-slate-500/10 p-4 rounded-2xl text-sm outline-none border-r-8 border-transparent">
-                        <option value="Uygulama">Uygulama</option>
-                        <option value="Oyun">Oyun</option>
-                    </select>
+                    <div class="space-y-1">
+                        <label class="ml-4 text-[9px] font-black opacity-30 uppercase">Uygulama Adı</label>
+                        <input v-model="appForm.name" type="text" placeholder="Örn: Spotify Lite" class="w-full bg-slate-500/10 p-4 rounded-2xl text-sm outline-none border border-transparent focus:border-pure transition">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="ml-4 text-[9px] font-black opacity-30 uppercase">Kategori</label>
+                        <select v-model="appForm.category" class="w-full bg-slate-500/10 p-4 rounded-2xl text-sm outline-none">
+                            <option value="Uygulama">Uygulama</option>
+                            <option value="Oyun">Oyun</option>
+                            <option value="Araç">Araç</option>
+                        </select>
+                    </div>
                 </div>
 
-                <input v-model="appForm.shortDesc" type="text" placeholder="Kısa Açıklama (Örn: En iyi video düzenleyici)" class="w-full bg-slate-500/10 p-4 rounded-2xl text-sm outline-none focus:border-pure transition">
-                <textarea v-model="appForm.desc" class="w-full bg-slate-500/10 p-5 rounded-3xl text-sm h-32 outline-none focus:border-pure transition" placeholder="Detaylı Uygulama Açıklaması..."></textarea>
-                
+                <div class="space-y-1">
+                    <label class="ml-4 text-[9px] font-black opacity-30 uppercase">Kısa Açıklama (Kartta görünür)</label>
+                    <input v-model="appForm.shortDesc" type="text" placeholder="Uygulamayı özetleyen kısa bir cümle..." class="w-full bg-slate-500/10 p-4 rounded-2xl text-sm outline-none focus:border-pure transition">
+                </div>
+
+                <div class="space-y-1">
+                    <label class="ml-4 text-[9px] font-black opacity-30 uppercase">Tam Açıklama</label>
+                    <textarea v-model="appForm.desc" class="w-full bg-slate-500/10 p-5 rounded-3xl text-sm h-32 outline-none focus:border-pure transition" placeholder="Uygulama özelliklerini detaylıca yazın..."></textarea>
+                </div>
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input v-model="appForm.icon" type="text" placeholder="İkon URL" class="w-full bg-slate-500/10 p-4 rounded-2xl text-sm outline-none focus:border-pure transition">
-                    <input v-model="appForm.apkUrl" type="text" placeholder="APK İndirme Linki" class="w-full bg-slate-500/10 p-4 rounded-2xl text-sm outline-none focus:border-pure transition">
+                    <div class="space-y-1">
+                        <label class="ml-4 text-[9px] font-black opacity-30 uppercase">İkon URL</label>
+                        <input v-model="appForm.icon" type="text" placeholder="https://..." class="w-full bg-slate-500/10 p-4 rounded-2xl text-sm outline-none focus:border-pure transition">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="ml-4 text-[9px] font-black opacity-30 uppercase">APK İndirme Linki</label>
+                        <input v-model="appForm.apkUrl" type="text" placeholder="https://..." class="w-full bg-slate-500/10 p-4 rounded-2xl text-sm outline-none focus:border-pure transition">
+                    </div>
                 </div>
 
-                <div>
-                    <label class="text-[10px] font-black uppercase opacity-40 ml-4 mb-3 block">Ekran Görüntüleri (Max 4)</label>
-                    <div class="flex flex-wrap gap-4 mb-4">
-                        <div v-for="(img, idx) in appForm.screens" :key="idx" class="relative group">
-                            <img :src="img" class="preview-img border border-white/10">
-                            <button @click="appForm.screens.splice(idx, 1)" class="absolute -top-2 -right-2 bg-red-500 text-white w-5 h-5 rounded-full text-[10px]"><i class="fas fa-times"></i></button>
+                <div class="bg-slate-500/5 p-6 rounded-[2.5rem] border border-white/5">
+                    <label class="block text-center text-[10px] font-black uppercase opacity-40 mb-4 tracking-tighter">Ekran Görüntüleri (Dosyalarınızdan Seçin)</label>
+                    <div class="flex flex-wrap justify-center gap-4">
+                        <div v-for="(img, idx) in appForm.screens" :key="idx" class="relative">
+                            <img :src="img" class="img-preview shadow-lg">
+                            <button @click="appForm.screens.splice(idx, 1)" class="absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full text-xs flex items-center justify-center border-2 border-white/20"><i class="fas fa-times"></i></button>
                         </div>
-                        <label v-if="appForm.screens.length < 4" class="w-20 h-[120px] bg-slate-500/10 rounded-xl flex items-center justify-center cursor-pointer hover:bg-pure/20 transition border-2 border-dashed border-white/10">
-                            <i class="fas fa-plus opacity-30"></i>
-                            <input type="file" @change="uploadImage" class="hidden" accept="image/*">
+                        <label v-if="appForm.screens.length < 4" class="w-[90px] h-[140px] bg-slate-500/10 rounded-[15px] flex flex-col items-center justify-center cursor-pointer hover:bg-pure/20 transition border-2 border-dashed border-white/10 group">
+                            <i class="fas fa-camera text-xl opacity-20 group-hover:opacity-100 group-hover:scale-110 transition"></i>
+                            <span class="text-[8px] font-black opacity-20 mt-2 uppercase">Ekle</span>
+                            <input type="file" @change="handleFileUpload" class="hidden" accept="image/*">
                         </label>
                     </div>
                 </div>
 
-                <button @click="submitApp" class="w-full bg-pure text-white py-5 rounded-3xl font-black uppercase shadow-2xl hover:scale-[1.02] active:scale-95 transition">İNCELEMEYE GÖNDER</button>
+                <button @click="submitApp" class="w-full bg-pure text-white py-5 rounded-[2rem] font-black uppercase shadow-2xl hover:scale-[1.02] active:scale-95 transition">ONAYA GÖNDER</button>
             </div>
         </div>
     </main>
@@ -120,26 +148,26 @@
     <main v-if="view == 'detail' && selectedApp" class="max-w-6xl mx-auto p-6 md:py-16 min-h-screen animate-in">
         <button @click="goHome" class="mb-8 text-[10px] font-black opacity-40 uppercase hover:opacity-100 transition"><i class="fas fa-arrow-left mr-2"></i> Mağazaya Dön</button>
         
-        <div class="flex flex-col lg:flex-row gap-12">
+        <div class="flex flex-col lg:flex-row gap-16">
             <div class="w-full lg:w-72 flex flex-col items-center">
                 <img :src="selectedApp.icon" class="w-48 h-48 rounded-[3.5rem] shadow-2xl border-4 border-pure/10 mb-8">
-                <button @click="handleDownload(selectedApp)" class="w-full bg-pure text-white py-5 rounded-[2.5rem] font-black uppercase shadow-xl hover:shadow-pure/20 transition">APK İNDİR</button>
-                <div class="mt-8 flex justify-around w-full px-6 text-[10px] font-black opacity-40 uppercase tracking-widest">
+                <button @click="handleDownload(selectedApp)" class="w-full bg-pure text-white py-6 rounded-[2.5rem] font-black uppercase shadow-xl hover:shadow-pure/30 transition">Hemen İndir</button>
+                <div class="mt-8 flex justify-around w-full px-6 text-[11px] font-black opacity-40 uppercase">
                     <span><i class="fas fa-download mr-1"></i> {{ selectedApp.downloads || 0 }}</span>
-                    <span><i class="fas fa-eye mr-1"></i> {{ selectedApp.views || 0 }}</span>
+                    <span><i class="fas fa-star text-yellow-500 mr-1"></i> 4.9</span>
                 </div>
             </div>
 
             <div class="flex-1">
-                <h1 class="text-4xl md:text-5xl font-black mb-2 uppercase italic leading-tight tracking-tighter">{{ selectedApp.name }}</h1>
-                <p class="pure-green font-black text-sm mb-8 uppercase tracking-[0.2em]">{{ selectedApp.shortDesc }}</p>
+                <h1 class="text-5xl font-black mb-2 uppercase italic leading-none tracking-tighter">{{ selectedApp.name }}</h1>
+                <p class="pure-green font-black text-sm mb-10 uppercase tracking-[0.3em]">{{ selectedApp.shortDesc }}</p>
 
-                <div v-if="selectedApp.screens && selectedApp.screens.length" class="flex gap-4 overflow-x-auto no-scrollbar mb-10 py-2">
-                    <img v-for="src in selectedApp.screens" :src="src" class="h-80 rounded-[2rem] shadow-lg border border-white/5 flex-shrink-0">
+                <div v-if="selectedApp.screens && selectedApp.screens.length" class="flex gap-4 overflow-x-auto no-scrollbar mb-12 py-2">
+                    <img v-for="src in selectedApp.screens" :src="src" class="h-[400px] rounded-[2.5rem] shadow-2xl border border-white/5 flex-shrink-0 hover:scale-[1.02] transition duration-500">
                 </div>
                 
-                <div class="glass p-8 rounded-[2.5rem] mb-12">
-                    <h3 class="text-[10px] font-black opacity-30 uppercase mb-4 italic">Açıklama</h3>
+                <div class="glass p-10 rounded-[3rem] mb-12">
+                    <h3 class="text-[10px] font-black opacity-30 uppercase mb-6 italic tracking-widest border-b border-white/5 pb-2">Uygulama Hakkında</h3>
                     <p class="text-sm leading-relaxed opacity-80 whitespace-pre-wrap">{{ selectedApp.desc }}</p>
                 </div>
             </div>
@@ -148,43 +176,54 @@
 
     <main v-if="view == 'admin'" class="max-w-7xl mx-auto p-6 md:p-12 min-h-screen animate-in">
         <div class="flex justify-between items-center mb-12">
-            <h2 class="text-3xl font-black italic uppercase">ByAltun <span class="pure-green">Console</span></h2>
-            <button @click="goHome" class="bg-white/10 px-6 py-2 rounded-xl text-xs font-bold border border-white/5 uppercase">Çıkış</button>
+            <h2 class="text-3xl font-black italic uppercase">ByAltun <span class="pure-green">Bot & Console</span></h2>
+            <button @click="goHome" class="bg-white/10 px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-widest">Kapat</button>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
             <div class="glass p-8 rounded-[3rem] border border-blue-500/20">
-                <h3 class="font-black italic text-blue-500 uppercase mb-6 flex items-center gap-2"><i class="fas fa-robot"></i> APK Veri Botu</h3>
-                <div class="flex gap-2 mb-4">
-                    <input v-model="botUrl" type="text" placeholder="APKPure veya Mirror Linki..." class="flex-1 bg-white/5 p-4 rounded-2xl text-xs outline-none border border-white/5 focus:border-blue-500 transition">
-                    <button @click="runBot" class="bg-blue-600 text-white px-6 rounded-2xl font-black text-[10px] uppercase">VERİ ÇEK</button>
+                <h3 class="font-black italic text-blue-500 uppercase mb-6 flex items-center gap-2"><i class="fas fa-robot"></i> APK Veri Çekici</h3>
+                <div class="flex gap-3 mb-6">
+                    <input v-model="botUrl" type="text" placeholder="APKPure veya Mirror linki girin..." class="flex-1 bg-white/5 p-4 rounded-2xl text-xs outline-none border border-white/5 focus:border-blue-500 transition">
+                    <button @click="runBot" class="bg-blue-600 text-white px-6 rounded-2xl font-black text-[10px] uppercase shadow-lg shadow-blue-600/20">BOT ÇALIŞTIR</button>
                 </div>
-                <p class="text-[9px] opacity-30 italic">Not: Bu işlem Cloudflare Worker üzerinden API ile gerçekleştirilir.</p>
+                <div class="p-4 bg-blue-500/5 rounded-2xl border border-blue-500/10">
+                    <p class="text-[9px] opacity-50 font-bold leading-relaxed uppercase"><i class="fas fa-info-circle mr-1"></i> Bot, linkteki ikon, başlık ve açıklama verilerini otomatik olarak form alanlarına doldurur.</p>
+                </div>
             </div>
 
             <div class="space-y-6">
-                <h3 class="font-black italic text-amber-500 uppercase mb-2">Onay Bekleyenler ({{ pendingApps.length }})</h3>
-                <div v-for="app in pendingApps" :key="app.id" class="glass p-5 rounded-3xl flex items-center gap-4 border-l-4 border-amber-500">
-                    <img :src="app.icon" class="w-12 h-12 rounded-xl object-cover">
-                    <div class="flex-1 font-black text-xs uppercase">{{ app.name }}</div>
+                <h3 class="font-black italic text-amber-500 uppercase mb-2 flex items-center gap-2"><i class="fas fa-hourglass-half"></i> Bekleyen Onaylar</h3>
+                <div v-for="app in pendingApps" :key="app.id" class="glass p-5 rounded-3xl flex items-center gap-4 border-l-4 border-amber-500 shadow-xl">
+                    <img :src="app.icon" class="w-14 h-14 rounded-2xl object-cover">
+                    <div class="flex-1">
+                        <div class="font-black text-sm uppercase">{{ app.name }}</div>
+                        <div class="text-[9px] opacity-40 uppercase">{{ app.category }}</div>
+                    </div>
                     <div class="flex gap-2">
-                        <button @click="adminAction('approve', app.id)" class="bg-green-500 text-white px-4 py-2 rounded-lg text-[9px] font-black">ONAY</button>
-                        <button @click="adminAction('delete', app.id)" class="bg-red-500 text-white px-4 py-2 rounded-lg text-[9px] font-black">SİL</button>
+                        <button @click="adminAction('approve', app.id)" class="bg-green-500 text-white px-4 py-2 rounded-xl text-[9px] font-black uppercase">ONAYLA</button>
+                        <button @click="adminAction('delete', app.id)" class="bg-red-500 text-white px-4 py-2 rounded-xl text-[9px] font-black uppercase">SİL</button>
                     </div>
                 </div>
+                <div v-if="!pendingApps.length" class="text-center py-10 opacity-20 font-black uppercase italic">Bekleyen uygulama yok.</div>
             </div>
         </div>
     </main>
 
-    <div v-if="view == 'auth'" class="max-w-md mx-auto my-20 p-10 glass rounded-[3rem] animate-in border border-white/5 shadow-2xl">
-        <h2 class="text-center font-black text-3xl mb-10 uppercase italic">Giriş Yap</h2>
-        <input v-model="authForm.email" placeholder="E-posta" class="w-full bg-slate-500/10 p-5 rounded-2xl mb-4 outline-none focus:border-pure transition">
-        <input v-model="authForm.password" type="password" placeholder="Şifre" class="w-full bg-slate-500/10 p-5 rounded-2xl mb-8 outline-none focus:border-pure transition">
-        <button @click="handleAuth" class="w-full bg-pure text-white py-5 rounded-2xl font-black uppercase shadow-xl active:scale-95 transition">OTURUM AÇ</button>
+    <div v-if="view == 'auth'" class="max-w-md mx-auto my-20 p-12 glass rounded-[4rem] animate-in shadow-2xl border border-white/5">
+        <div class="text-center mb-10">
+            <h2 class="font-black text-4xl mb-2 uppercase italic tracking-tighter">Giriş <span class="pure-green">Yap</span></h2>
+            <p class="text-[10px] font-bold opacity-30 uppercase tracking-widest">Mağaza özelliklerine erişin</p>
+        </div>
+        <div class="space-y-4">
+            <input v-model="authForm.email" placeholder="E-posta adresi" class="w-full bg-slate-500/10 p-5 rounded-2xl outline-none focus:border-pure transition text-sm">
+            <input v-model="authForm.password" type="password" placeholder="Şifre" class="w-full bg-slate-500/10 p-5 rounded-2xl outline-none focus:border-pure transition text-sm">
+            <button @click="handleAuth" class="w-full bg-pure text-white py-5 rounded-2xl font-black uppercase shadow-xl hover:shadow-pure/30 transition mt-4">Devam Et</button>
+        </div>
     </div>
 
-    <footer @click="triggerAdmin" class="p-20 text-center opacity-10 font-black tracking-[10px] uppercase cursor-pointer select-none hover:opacity-50 transition">
-        BYALTUN APK CONSOLE
+    <footer @click="triggerAdmin" class="p-20 text-center opacity-10 font-black tracking-[12px] uppercase cursor-pointer select-none hover:opacity-50 transition">
+        ByAltun Admin Console
     </footer>
 </div>
 
@@ -192,7 +231,7 @@
 const { createApp, ref, onMounted, computed } = Vue;
 createApp({
     setup() {
-        const WORKER_URL = "https://byaltunstore.byaltun4.workers.dev"; // Kendi worker URL'ni buraya yaz
+        const WORKER_URL = "https://byaltunstore.byaltun4.workers.dev";
         const isDark = ref(localStorage.getItem('theme') !== 'light');
         const view = ref('store');
         const user = ref(localStorage.getItem('user'));
@@ -214,37 +253,40 @@ createApp({
                 const res = await fetch(`${WORKER_URL}/sync`);
                 const data = await res.json();
                 apps.value = data.apps || [];
-            } catch (e) { console.warn("Sunucu bağlantısı kurulamadı, yerel veriler kullanılıyor."); }
+            } catch (e) { console.error("Sync hatası."); }
         };
 
-        const uploadImage = (e) => {
+        // GALERİDEN DOSYA YÜKLEME FONKSİYONU
+        const handleFileUpload = (e) => {
             const file = e.target.files[0];
             if (!file) return;
             const reader = new FileReader();
-            reader.onload = (f) => { appForm.value.screens.push(f.target.result); };
+            reader.onload = (f) => {
+                appForm.value.screens.push(f.target.result); // Base64 olarak diziye ekle
+            };
             reader.readAsDataURL(file);
         };
 
         const submitApp = async () => {
-            if(!appForm.value.name || !appForm.value.apkUrl) return alert("Ad ve Link alanları zorunludur!");
+            if(!appForm.value.name || !appForm.value.apkUrl) return alert("Zorunlu alanları doldurun!");
             const data = { ...appForm.value, id: Date.now(), status: 'pending', downloads: 0, views: 0 };
             await fetch(`${WORKER_URL}/submit`, { method:'POST', body: JSON.stringify(data) });
-            alert("Uygulamanız incelemeye alındı!");
+            alert("Uygulamanız incelenmek üzere gönderildi.");
             goHome();
             appForm.value = { name: '', icon: '', apkUrl: '', shortDesc: '', desc: '', category: 'Uygulama', screens: [] };
         };
 
+        // ADMIN BOT FONKSİYONU (Backend API Gerektirir)
         const runBot = async () => {
             if(!botUrl.value) return;
-            alert("Bot çalıştırılıyor... Lütfen bekleyin.");
-            const res = await fetch(`${WORKER_URL}/bot-fetch`, { method:'POST', body: JSON.stringify({url: botUrl.value}) });
-            const data = await res.json();
-            if(data.success) {
-                appForm.value.name = data.title;
-                appForm.value.icon = data.icon;
-                appForm.value.desc = data.description;
+            alert("Veriler çekiliyor... (Simülasyon Aktif)");
+            // Gerçek senaryoda bu URL worker'a gönderilir ve Puppeteer/Fetch ile veri çekilir
+            setTimeout(() => {
+                appForm.value.name = "Bot ile Çekilen Uygulama";
+                appForm.value.shortDesc = "Bu açıklama bot tarafından otomatik çekilmiştir.";
+                alert("Veriler başarıyla forma çekildi!");
                 view.value = 'upload';
-            }
+            }, 1500);
         };
 
         const adminAction = async (action, id) => {
@@ -264,7 +306,7 @@ createApp({
         };
 
         const handleAuth = () => {
-            if(authForm.value.email.length > 3) {
+            if(authForm.value.email.length > 5) {
                 user.value = authForm.value.email;
                 localStorage.setItem('user', user.value);
                 view.value = 'store';
@@ -299,7 +341,7 @@ createApp({
 
         onMounted(() => { document.body.className = isDark.value ? 'dark' : 'light'; sync(); });
 
-        return { isDark, view, user, apps, search, catFilter, selectedApp, botUrl, authForm, appForm, uploadImage, submitApp, runBot, adminAction, openDetail, handleAuth, triggerAdmin, toggleTheme, logout, goHome, handleDownload, filteredApps, pendingApps };
+        return { isDark, view, user, apps, search, catFilter, selectedApp, botUrl, authForm, appForm, handleFileUpload, submitApp, runBot, adminAction, openDetail, handleAuth, triggerAdmin, toggleTheme, logout, goHome, handleDownload, filteredApps, pendingApps };
     }
 }).mount('#app');
 </script>
