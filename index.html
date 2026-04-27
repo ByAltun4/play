@@ -3,104 +3,111 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ByAltun APK</title>
+<title>ByAltun Store</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/vue@3"></script>
 
 <style>
-body{transition:.3s}
 .dark{background:#020617;color:#fff}
 .light{background:#f1f5f9;color:#111}
-.card{transition:.2s}
-.card:hover{transform:translateY(-5px)}
 </style>
 </head>
 
 <body>
 
-<div id="app" :class="dark?'dark':'light'">
+<div id="app" :class="dark?'dark':'light'" class="min-h-screen">
 
 <!-- NAV -->
-<div class="p-4 flex justify-between items-center border-b">
+<div class="p-4 flex justify-between border-b">
+<h1 @click="view='store'" class="font-bold text-xl cursor-pointer">BYALTUN</h1>
 
-<h1 class="font-bold text-xl cursor-pointer" @click="view='store'">
-BYALTUN APK
-</h1>
-
-<input v-model="search" placeholder="Ara..." class="px-3 py-1 rounded text-black w-40">
+<input v-model="search" placeholder="Ara..." class="text-black px-2 rounded">
 
 <div class="flex gap-2">
-
 <button @click="dark=!dark">🌙</button>
 
-<button v-if="!user" @click="view='auth'" class="bg-green-500 px-3 py-1 rounded text-white">
-Giriş
-</button>
-
-<button v-if="user" @click="view='upload'" class="bg-green-500 px-3 py-1 rounded text-white">
-Yükle
-</button>
-
+<button v-if="!user" @click="view='auth'" class="bg-green-500 px-3 py-1 text-white">Giriş</button>
+<button v-if="user" @click="view='upload'" class="bg-green-500 px-3 py-1 text-white">Yükle</button>
 <button v-if="user" @click="logout">Çıkış</button>
-
 </div>
-</div>
-
-<!-- FILTER -->
-<div class="p-3 flex gap-3 text-sm">
-<button @click="cat='all'">Tümü</button>
-<button @click="cat='Oyun'">Oyun</button>
-<button @click="cat='Uygulama'">Uygulama</button>
-<button @click="sort='top'">Popüler</button>
 </div>
 
 <!-- STORE -->
 <div v-if="view=='store'" class="p-4">
 
-<h2 class="font-bold mb-3">🔥 Günün Uygulamaları</h2>
-
-<div class="grid md:grid-cols-3 gap-4 mb-8">
-<div v-for="a in featured" class="bg-gray-800 p-4 rounded">
-
-<img :src="a.screen||a.icon" class="rounded mb-2">
-
-<h3>{{a.name}}</h3>
-
-<button @click="download(a)" class="bg-green-500 px-3 py-1 mt-2 rounded">
-İndir
-</button>
-
-</div>
-</div>
-
 <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
 
-<div v-for="a in filtered" class="card bg-gray-800 p-3 rounded text-center">
+<div v-for="a in filtered" @click="openApp(a)" class="bg-gray-800 p-3 rounded cursor-pointer">
 
-<img :src="a.icon" class="w-full h-20 object-cover rounded mb-2">
+<img :src="a.icon" class="h-20 w-full object-cover rounded mb-2">
 
-<p class="text-sm">{{a.name}}</p>
+<p>{{a.name}}</p>
 
-<button @click="download(a)" class="bg-green-500 px-2 py-1 mt-2 rounded text-xs">
+<div class="text-yellow-400 text-xs">
+<span v-for="i in 5">
+{{ i <= (a.rating||0) ? '★':'☆' }}
+</span>
+</div>
+
+</div>
+
+</div>
+</div>
+
+<!-- DETAIL -->
+<div v-if="view=='detail'" class="p-6 max-w-2xl mx-auto">
+
+<button @click="view='store'">← Geri</button>
+
+<img :src="app.icon" class="w-24 mb-3">
+
+<h2 class="text-2xl font-bold">{{app.name}}</h2>
+
+<p class="opacity-60 mb-3">{{app.desc}}</p>
+
+<p>📥 İndirme: {{app.downloads||0}}</p>
+<p>👁️ Görüntülenme: {{app.views||0}}</p>
+
+<!-- RATING -->
+<div class="my-3">
+<span v-for="i in 5" @click="rate(i)" class="cursor-pointer text-xl">
+{{ i <= rating ? '★':'☆' }}
+</span>
+</div>
+
+<button @click="download(app)" class="bg-green-500 px-4 py-2 text-white rounded">
 İndir
+</button>
+
+<button @click="affiliate(app)" class="bg-blue-500 px-4 py-2 text-white rounded ml-2">
+Affiliate Tık
+</button>
+
+<!-- COMMENTS -->
+<div class="mt-6">
+<h3>Yorumlar</h3>
+
+<div v-for="c in appComments" class="border-b py-2">
+⭐ {{c.rating}} - {{c.text}}
+</div>
+
+<input v-model="comment" placeholder="Yorum yaz..." class="text-black w-full mt-2 p-2">
+
+<button @click="sendComment" class="bg-green-500 px-3 py-1 mt-2">
+Gönder
 </button>
 
 </div>
 
-</div>
 </div>
 
 <!-- AUTH -->
 <div v-if="view=='auth'" class="p-6 max-w-sm mx-auto">
-
 <input v-model="email" placeholder="Email" class="w-full mb-2 p-2 text-black">
-<input v-model="pass" type="password" placeholder="Şifre" class="w-full mb-2 p-2 text-black">
+<input v-model="pass" placeholder="Şifre" class="w-full mb-2 p-2 text-black">
 
-<button @click="login" class="w-full bg-green-500 p-2 text-white">
-Giriş / Kayıt
-</button>
-
+<button @click="login" class="w-full bg-green-500 p-2 text-white">Giriş</button>
 </div>
 
 <!-- UPLOAD -->
@@ -108,21 +115,13 @@ Giriş / Kayıt
 
 <input v-model="form.name" placeholder="Ad" class="w-full mb-2 p-2 text-black">
 
-<select v-model="form.category" class="w-full mb-2 p-2 text-black">
-<option>Uygulama</option>
-<option>Oyun</option>
-</select>
-
 <input v-model="form.apkUrl" placeholder="APK Link" class="w-full mb-2 p-2 text-black">
-
-<input v-model="form.devName" placeholder="Geliştirici" class="w-full mb-2 p-2 text-black">
 
 <textarea v-model="form.desc" placeholder="Açıklama" class="w-full mb-2 p-2 text-black"></textarea>
 
-<input type="file" @change="upload($event,'icon')" class="mb-2">
-<input type="file" @change="upload($event,'screen')" class="mb-2">
+<input type="file" @change="upload($event,'icon')">
 
-<button @click="submit" class="bg-green-500 px-4 py-2 text-white w-full">
+<button @click="submit" class="bg-green-500 px-4 py-2 text-white w-full mt-2">
 Gönder
 </button>
 
@@ -139,7 +138,11 @@ setup(){
 const API="https://byaltunstore.byaltun4.workers.dev";
 
 const apps=ref([]);
+const comments=ref([]);
+
 const view=ref("store");
+const app=ref(null);
+
 const dark=ref(true);
 const user=ref(localStorage.getItem("u"));
 
@@ -147,28 +150,55 @@ const email=ref("");
 const pass=ref("");
 
 const search=ref("");
-const cat=ref("all");
-const sort=ref("new");
 
-const form=ref({
-name:"",icon:"",screen:"",apkUrl:"",devName:"",desc:"",category:"Uygulama"
-});
+const rating=ref(0);
+const comment=ref("");
+
+const form=ref({name:"",icon:"",apkUrl:"",desc:""});
 
 const sync=async()=>{
 const r=await fetch(API+"/sync");
 const d=await r.json();
 apps.value=d.apps;
+comments.value=d.comments||[];
 };
 
 const login=async()=>{
-const r=await fetch(API+"/auth",{method:"POST",body:JSON.stringify({
+await fetch(API+"/auth",{method:"POST",body:JSON.stringify({
 email:email.value,password:pass.value
 })});
-const d=await r.json();
-
 user.value=email.value;
 localStorage.setItem("u",email.value);
 view.value="store";
+};
+
+const openApp=async(a)=>{
+app.value=a;
+view.value="detail";
+await fetch(API+"/track",{method:"POST",body:JSON.stringify({id:a.id,type:"view"})});
+};
+
+const download=async(a)=>{
+await fetch(API+"/track",{method:"POST",body:JSON.stringify({id:a.id,type:"download"})});
+window.open(a.apkUrl);
+};
+
+const affiliate=async(a)=>{
+await fetch(API+"/track",{method:"POST",body:JSON.stringify({id:a.id,type:"affiliate"})});
+alert("Affiliate tık sayıldı 💸");
+};
+
+const rate=(r)=>rating.value=r;
+
+const sendComment=async()=>{
+await fetch(API+"/comment",{method:"POST",body:JSON.stringify({
+appId:app.value.id,
+text:comment.value,
+rating:rating.value
+})});
+comment.value="";
+rating.value=0;
+sync();
 };
 
 const upload=(e,t)=>{
@@ -180,24 +210,14 @@ r.readAsDataURL(f);
 
 const submit=async()=>{
 await fetch(API+"/submit",{method:"POST",body:JSON.stringify(form.value)});
-alert("Gönderildi");
+alert("Onay bekliyor");
 view.value="store";
 sync();
 };
 
-const download=async(a)=>{
-await fetch(API+"/track",{method:"POST",body:JSON.stringify({id:a.id,type:"download"})});
-window.open(a.apkUrl);
-};
+const filtered=computed(()=>apps.value.filter(a=>a.name.toLowerCase().includes(search.value.toLowerCase())));
 
-const filtered=computed(()=>{
-let r=apps.value.filter(a=>a.name.toLowerCase().includes(search.value.toLowerCase()));
-if(cat.value!="all") r=r.filter(a=>a.category==cat.value);
-if(sort.value=="top") r=r.sort((a,b)=>b.downloads-a.downloads);
-return r;
-});
-
-const featured=computed(()=>apps.value.filter(a=>a.isToday));
+const appComments=computed(()=>comments.value.filter(c=>c.appId==app.value?.id));
 
 const logout=()=>{
 localStorage.clear();
@@ -207,13 +227,12 @@ user.value=null;
 onMounted(sync);
 
 return{
-apps,view,dark,user,
-email,pass,login,
-search,cat,sort,
-filtered,featured,
-download,form,upload,submit,logout
+apps,view,app,openApp,download,
+dark,user,email,pass,login,logout,
+search,filtered,
+comment,rating,rate,sendComment,appComments,
+upload,form,submit,affiliate
 };
-
 }
 }).mount("#app");
 </script>
