@@ -3,156 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ByAltun | Luxury Digital Studio</title>
+    <title>ByAltun | Digital Force Kyiv</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100;400;900&family=JetBrains+Mono&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Space+Grotesk:wght@300;500;700&display=swap');
         
-        :root { --p: #6366f1; --bg: #000; --txt: #fff; }
-        .light-mode { --bg: #ffffff; --txt: #000; --p: #4338ca; }
+        body { background: #050505; color: #fff; font-family: 'Space Grotesk', sans-serif; overflow-x: hidden; }
+        .font-sync { font-family: 'Syncopate', sans-serif; }
 
-        body { 
-            background: var(--bg); color: var(--txt); 
-            font-family: 'Outfit', sans-serif; transition: 0.8s ease;
-            overflow-x: hidden;
+        /* Arka Plan Hareketli Izgara */
+        .bg-grid {
+            position: fixed; inset: 0;
+            background-image: linear-gradient(rgba(99, 102, 241, 0.05) 1px, transparent 1px), 
+                              linear-gradient(90deg, rgba(99, 102, 241, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px; z-index: -1; transform: perspective(500px) rotateX(60deg);
+            transform-origin: center top; animation: grid-move 20s linear infinite;
         }
+        @keyframes grid-move { from { background-position: 0 0; } to { background-position: 0 1000px; } }
 
-        /* Arka Plan Efekti */
-        .aura {
-            position: fixed; width: 60vw; height: 60vw;
-            background: radial-gradient(circle, var(--p) 0%, transparent 70%);
-            filter: blur(120px); opacity: 0.15; z-index: -1; animation: float 20s infinite alternate;
-        }
-
-        @keyframes float { from { transform: translate(-10%, -10%); } to { transform: translate(20%, 20%); } }
-
-        /* Proje Kartları */
-        .project-card {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(30px);
+        .glass-card {
+            background: rgba(15, 15, 15, 0.7);
+            backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 50px;
-            padding: 50px;
-            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            transition: all 0.5s ease;
         }
+        .glass-card:hover { border-color: #6366f1; box-shadow: 0 0 30px rgba(99, 102, 241, 0.2); transform: translateY(-5px); }
 
-        .light-mode .project-card { background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.1); }
-
-        .project-card:hover {
-            transform: scale(1.02) translateY(-20px);
-            border-color: var(--p);
-            box-shadow: 0 40px 100px rgba(0,0,0,0.5);
-        }
-
-        .hero-text {
-            font-size: clamp(4rem, 15vw, 12rem);
-            font-weight: 900; line-height: 0.8; letter-spacing: -5px;
-        }
-
-        .btn-premium {
-            background: var(--txt); color: var(--bg);
-            padding: 20px 50px; border-radius: 100px;
-            font-weight: 900; font-size: 14px; letter-spacing: 2px;
-            transition: 0.4s;
-        }
-
-        .btn-premium:hover { transform: scale(1.1) rotate(-2deg); background: var(--p); color: #fff; }
-
+        .neon-glow { text-shadow: 0 0 10px rgba(99, 102, 241, 0.8); }
+        .gradient-border { border-image: linear-gradient(to right, #6366f1, #a855f7) 1; }
+        
         [v-cloak] { display: none; }
     </style>
 </head>
-<body :class="{'light-mode': !isDark}">
-    <div class="aura"></div>
+<body>
+    <div class="bg-grid"></div>
 
     <div id="app" v-cloak>
-        <nav class="fixed top-0 w-full p-8 flex justify-between items-center z-50">
-            <div class="text-3xl font-black tracking-tighter">ByAltun<span class="text-indigo-500">.</span></div>
-            
+        <nav class="fixed top-0 w-full z-50 p-6 flex justify-between items-center bg-black/50 backdrop-blur-md border-b border-white/5">
+            <div class="flex items-center gap-4">
+                <div class="text-2xl font-bold font-sync neon-glow">BYALTUN</div>
+                <div class="h-6 w-[1px] bg-white/20"></div>
+                <div class="text-[10px] font-mono opacity-60">SYSTEM_v5.2 // KYIV_NODE</div>
+            </div>
+
             <div class="flex items-center gap-6">
-                <div class="hidden md:flex flex-col text-right font-mono text-[10px] opacity-40">
-                    <span>{{ currentTime }}</span>
-                    <span>KYIV / {{ temp }}°C / {{ weather }}</span>
+                <div class="hidden lg:flex items-center gap-4 glass-card px-4 py-2 rounded-full text-[10px] font-bold">
+                    <span class="text-indigo-500">LIVE: {{ currentTime }}</span>
+                    <span>{{ city.toUpperCase() }} / {{ temp }}°C / {{ weatherDesc }}</span>
                 </div>
-                <button @click="isDark = !isDark" class="w-12 h-12 rounded-full border border-current flex items-center justify-center opacity-40 hover:opacity-100 transition">
-                    <i :class="isDark ? 'fas fa-sun' : 'fas fa-moon'"></i>
-                </button>
-                <div class="flex gap-2">
+                <div class="flex gap-2 bg-white/5 p-1 rounded-xl">
                     <button v-for="(l, code) in languages" @click="currentLang = code" 
-                            class="w-10 h-10 rounded-full flex items-center justify-center border border-current text-[10px] font-bold transition"
-                            :class="currentLang === code ? 'bg-indigo-600 text-white border-indigo-600' : 'opacity-20 hover:opacity-100'">
-                        <img :src="l.flag" class="w-4 h-3 rounded-sm">
+                            class="px-3 py-1 rounded-lg text-[10px] font-bold transition uppercase"
+                            :class="currentLang === code ? 'bg-indigo-600' : 'opacity-40 hover:opacity-100'">
+                        <img :src="l.flag" class="w-4 h-2.5 inline-block mr-1 rounded-sm"> {{ code }}
                     </button>
                 </div>
             </div>
         </nav>
 
-        <header class="min-h-screen flex flex-col justify-center px-10 max-w-7xl mx-auto pt-20">
-            <p class="text-xs tracking-[10px] uppercase opacity-40 mb-10">{{ t.status }}</p>
-            <h1 class="hero-text uppercase">
-                Dream<br><span class="opacity-10 italic">Bigger.</span><br>Code<br><span class="text-indigo-500">Faster.</span>
+        <header class="min-h-screen flex flex-col justify-center items-center text-center px-6 relative overflow-hidden">
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+            
+            <h2 class="text-xs tracking-[15px] uppercase opacity-40 mb-6 font-sync">{{ t.status }}</h2>
+            <h1 class="text-[10vw] font-bold leading-none font-sync tracking-tighter mb-10">
+                BUILDING<br><span class="text-indigo-600">THE CORE.</span>
             </h1>
+            <p class="text-lg md:text-2xl max-w-3xl opacity-60 leading-relaxed italic">
+                "{{ t.heroSub }}"
+            </p>
         </header>
 
-        <main class="max-w-7xl mx-auto px-6 py-40 space-y-20">
+        <main class="max-w-[1600px] mx-auto px-6 py-20 grid grid-cols-1 md:grid-cols-12 gap-8">
             
-            <div class="project-card flex flex-col lg:flex-row items-center gap-16 overflow-hidden relative">
-                <div class="w-64 h-64 bg-amber-500 rounded-[3rem] flex items-center justify-center shadow-[0_0_50px_rgba(245,158,11,0.3)] shrink-0">
-                    <i class="fas fa-kaaba text-[7rem] text-black"></i>
+            <div class="md:col-span-7 glass-card p-12 rounded-[3rem] relative overflow-hidden group">
+                <div class="absolute -right-20 -top-20 text-[20rem] font-bold opacity-[0.03] italic">01</div>
+                <div class="flex flex-col md:flex-row gap-10 items-center">
+                    <div class="w-48 h-48 bg-amber-500 rounded-[2.5rem] flex items-center justify-center shadow-[0_0_50px_rgba(245,158,11,0.2)] shrink-0 group-hover:scale-110 transition duration-700">
+                        <i class="fas fa-kaaba text-[6rem] text-black"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-5xl font-bold mb-4 font-sync italic">MİKAT</h3>
+                        <p class="text-lg opacity-50 mb-8">{{ t.mikatDesc }}</p>
+                        <a href="https://byaltun4.github.io/mikat/index.html" class="inline-block px-10 py-4 border-2 border-amber-500 text-amber-500 font-bold rounded-full hover:bg-amber-500 hover:text-black transition uppercase text-xs tracking-widest">{{ t.btn }}</a>
+                    </div>
                 </div>
-                <div class="flex-1 text-center lg:text-left">
-                    <div class="text-[10px] font-bold tracking-[5px] text-amber-500 mb-4 uppercase">Spiritual Technology</div>
-                    <h2 class="text-6xl md:text-8xl font-black mb-6 italic tracking-tighter">MİKAT</h2>
-                    <p class="text-xl md:text-2xl opacity-50 mb-10 max-w-2xl leading-relaxed">{{ t.mikatDesc }}</p>
-                    <a href="https://byaltun4.github.io/mikat/index.html" target="_blank" class="btn-premium inline-block uppercase">{{ t.btn }}</a>
-                </div>
-                <div class="absolute -right-10 top-0 text-[15rem] font-black opacity-[0.02] pointer-events-none italic">01</div>
             </div>
 
-            <div class="project-card flex flex-col lg:flex-row-reverse items-center gap-16 border-emerald-500/20">
-                <div class="w-64 h-64 bg-emerald-500 rounded-[3rem] flex items-center justify-center shadow-[0_0_50px_rgba(16,185,129,0.3)] shrink-0">
-                    <i class="fas fa-paw text-[7rem] text-white"></i>
+            <div class="md:col-span-5 glass-card p-10 rounded-[3rem] border-indigo-500/20 flex flex-col justify-center">
+                <h4 class="text-xs tracking-[5px] uppercase opacity-30 mb-6">Tech Stack</h4>
+                <div class="grid grid-cols-2 gap-4">
+                    <div v-for="tech in ['React Native', 'Expo', 'GSAP', 'Firebase', 'Tailwind', 'EAS Build']" 
+                         class="bg-white/5 p-3 rounded-xl border border-white/5 text-[10px] font-bold uppercase tracking-widest text-center">
+                        {{ tech }}
+                    </div>
                 </div>
-                <div class="flex-1 text-center lg:text-left">
-                    <div class="text-[10px] font-bold tracking-[5px] text-emerald-500 mb-4 uppercase">Life Assistant</div>
-                    <h2 class="text-6xl md:text-8xl font-black mb-6 tracking-tighter uppercase">PawPal</h2>
-                    <p class="text-xl md:text-2xl opacity-50 mb-10 max-w-2xl leading-relaxed">{{ t.pawpalDesc }}</p>
-                    <a href="https://byaltun4.github.io/pawpal/" target="_blank" class="btn-premium inline-block uppercase" style="background:#10b981; color:white">{{ t.btn }}</a>
-                </div>
-                <div class="absolute -left-10 top-0 text-[15rem] font-black opacity-[0.02] pointer-events-none italic">02</div>
             </div>
 
-            <div class="project-card flex flex-col lg:flex-row items-center gap-16 bg-gradient-to-br from-blue-600/10 to-transparent border-blue-500/30">
-                <div class="w-64 h-64 bg-blue-600 rounded-[3rem] flex items-center justify-center shadow-[0_0_50px_rgba(37,99,235,0.3)] shrink-0">
-                    <i class="fas fa-droplet text-[7rem] text-white"></i>
+            <div class="md:col-span-4 glass-card p-10 rounded-[3rem] border-emerald-500/20 group">
+                <div class="w-16 h-16 bg-emerald-500 rounded-2xl flex items-center justify-center mb-10 shadow-lg shadow-emerald-500/20">
+                    <i class="fas fa-paw text-3xl text-white"></i>
                 </div>
-                <div class="flex-1 text-center lg:text-left">
-                    <div class="text-[10px] font-bold tracking-[5px] text-blue-500 mb-4 uppercase">Infrastructure Monitoring</div>
-                    <h2 class="text-6xl md:text-8xl font-black mb-6 tracking-tighter uppercase">Inver Water</h2>
-                    <p class="text-xl md:text-2xl opacity-50 mb-10 max-w-2xl leading-relaxed">{{ t.inverDesc }}</p>
-                    <a href="https://inver2-ops.github.io/" target="_blank" class="btn-premium inline-block uppercase" style="background:#2563eb; color:white">{{ t.btn }}</a>
+                <h3 class="text-3xl font-bold mb-4 font-sync">PAWPAL</h3>
+                <p class="opacity-40 text-sm leading-relaxed mb-10">{{ t.pawpalDesc }}</p>
+                <a href="https://byaltun4.github.io/pawpal/" class="block w-full py-4 text-center border border-white/10 rounded-2xl hover:bg-emerald-500 hover:border-emerald-500 transition font-bold uppercase text-[10px]">{{ t.btn }}</a>
+            </div>
+
+            <div class="md:col-span-8 glass-card p-10 rounded-[3rem] border-blue-500/20 flex flex-col md:flex-row gap-10 items-center bg-gradient-to-br from-blue-600/5 to-transparent">
+                <div class="w-32 h-32 bg-blue-600 rounded-[2rem] flex items-center justify-center shadow-xl shrink-0">
+                    <i class="fas fa-droplet text-5xl text-white"></i>
                 </div>
-                <div class="absolute -right-10 top-0 text-[15rem] font-black opacity-[0.02] pointer-events-none italic">03</div>
+                <div class="flex-1">
+                    <h3 class="text-4xl font-bold mb-4 font-sync uppercase">INVER WATER</h3>
+                    <p class="opacity-40 text-sm leading-relaxed mb-6">{{ t.inverDesc }}</p>
+                    <a href="https://inver2-ops.github.io/" class="inline-block px-8 py-3 bg-blue-600 rounded-xl font-bold text-xs uppercase tracking-widest hover:shadow-[0_0_30px_rgba(37,99,235,0.4)] transition">{{ t.btn }}</a>
+                </div>
             </div>
 
         </main>
 
-        <footer class="pb-40 px-6">
-            <div class="max-w-7xl mx-auto project-card text-center py-32 border-white/5 group">
-                <span class="text-[10px] tracking-[10px] uppercase opacity-30 mb-10 block italic">{{ t.contactTitle }}</span>
-                <a href="mailto:altun4@gmail.com" class="text-3xl md:text-7xl font-black tracking-tighter hover:text-indigo-500 transition duration-500 underline decoration-indigo-500/30">
+        <footer class="py-40 px-6">
+            <div class="max-w-5xl mx-auto glass-card p-12 lg:p-24 rounded-[4rem] border-indigo-500/30 text-center relative overflow-hidden">
+                <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
+                <h2 class="text-4xl md:text-6xl font-bold mb-12 font-sync italic uppercase tracking-tighter">{{ t.contactTitle }}</h2>
+                <a href="mailto:altun4@gmail.com" class="text-2xl md:text-5xl font-bold text-indigo-500 hover:text-white transition break-all underline decoration-1 underline-offset-8">
                     altun4@gmail.com
                 </a>
-                <div class="mt-20 flex justify-center gap-10 opacity-20">
-                    <i class="fab fa-android text-4xl"></i>
-                    <i class="fab fa-apple text-4xl"></i>
-                    <i class="fas fa-code text-4xl"></i>
-                </div>
             </div>
-            <div class="mt-20 text-center opacity-20 text-[10px] tracking-[8px] uppercase font-black">
-                ByAltun Lab &copy; MMXXVI Kyiv
+            <div class="mt-20 text-center opacity-20 text-[9px] tracking-[10px] font-black uppercase">
+                Designed & Developed by BYALTUN LABS // KYIV 2026
             </div>
         </footer>
     </div>
@@ -162,46 +143,36 @@
 
         createApp({
             setup() {
-                const isDark = ref(true);
                 const currentLang = ref('tr');
+                const city = ref('Kyiv');
+                const temp = ref('21');
+                const weatherDesc = ref('Cloudy');
                 const currentTime = ref('');
-                const temp = ref('22');
-                const weather = ref('Sunny');
 
                 const languages = {
-                    tr: { flag: 'https://flagcdn.com/tr.svg', status: 'SİSTEM ÇEVRİMİÇİ / 2026', mikatDesc: 'Modern maneviyat için tasarlanmış, en yüksek hassasiyetli dini rehber ve vakit asistanı.', pawpalDesc: 'Evcil dostlarınızın sağlığı ve bakımı için geliştirilmiş yapay zeka destekli akıllı takip sistemi.', inverDesc: 'Kyiv şehri altyapı verilerini, su kesintilerini ve finansal nabzı tutan entegre platform.', btn: 'PROJEYİ İNCELE', contactTitle: 'BİZE ULAŞIN' },
-                    en: { flag: 'https://flagcdn.com/us.svg', status: 'SYSTEM ONLINE / 2026', mikatDesc: 'High-precision spiritual guide and time assistant designed for the modern soul.', pawpalDesc: 'AI-powered smart tracking system developed for your pet\'s health and care.', inverDesc: 'Integrated platform monitoring Kyiv\'s infrastructure, water outages, and financial pulse.', btn: 'VIEW PROJECT', contactTitle: 'GET IN TOUCH' },
-                    ua: { flag: 'https://flagcdn.com/ua.svg', status: 'СИСТЕМА ОНЛАЙН / 2026', mikatDesc: 'Високоточний духовний гід і помічник у часі, розроблений для сучасної душі.', pawpalDesc: 'Інтелектуальна система відстеження для здоров’я та догляду за вашими улюбленцями.', inverDesc: 'Інтегрована платформа для моніторингу інфраструктури Києва та фінансів.', btn: 'ВІДКРИТИ', contactTitle: 'ЗВ’ЯЖІТЬСЯ' },
-                    ru: { flag: 'https://flagcdn.com/ru.svg', status: 'СИСТЕМА ОНЛАЙН / 2026', mikatDesc: 'Высокоточный духовный гид и помощник времени, созданный для современной души.', pawpalDesc: 'Интеллектуальная система отслеживания для здоровья и ухода за вашими питомцами.', inverDesc: 'Интегрированная платформа для мониторинга инфраструктуры Киева и финансов.', btn: 'ОТКРЫТЬ', contactTitle: 'СВЯЗАТЬСЯ' }
+                    tr: { flag: 'https://flagcdn.com/tr.svg', status: 'DİJİTAL MİMARİ ÜRETİMİ', heroSub: 'Karmaşık sorunlara minimalist ve yüksek performanslı mobil çözümler sunuyoruz.', mikatDesc: 'Yüksek hassasiyetli algoritmasıyla ibadet vakitlerini ve dini rehberliği modern arayüzle buluşturan amiral gemisi uygulamamız.', pawpalDesc: 'Evcil hayvanlarınızın sağlığı, randevuları ve günlük rutinleri için geliştirilmiş akıllı takip asistanı.', inverDesc: 'Kyiv şehri altyapı verilerini, anlık su kesintilerini ve finansal değişimleri takip eden profesyonel platform.', btn: 'Sistemi Başlat', contactTitle: 'BAĞLANTI KUR' },
+                    en: { flag: 'https://flagcdn.com/us.svg', status: 'DIGITAL ARCHITECTURAL PRODUCTION', heroSub: 'Providing minimalist and high-performance mobile solutions for complex problems.', mikatDesc: 'Our flagship app blending high-precision algorithms with a modern UI for prayer times and spiritual guidance.', pawpalDesc: 'Smart tracking assistant developed for your pets\' health, appointments, and daily routines.', inverDesc: 'Professional platform monitoring Kyiv\'s infrastructure, water outages, and financial trends.', btn: 'Launch System', contactTitle: 'GET CONNECTED' },
+                    ua: { flag: 'https://flagcdn.com/ua.svg', status: 'ЦИФРОВЕ АРХІТЕКТУРНЕ ВИРОБНИЦТВО', heroSub: 'Надаємо мінімалістичні та високоефективні мобільні рішення.', mikatDesc: 'Флагманський додаток з високоточними алгоритмами для духовного керівництва.', pawpalDesc: 'Розумний помічник для відстеження здоров’я та рутини ваших улюбленців.', inverDesc: 'Платформа моніторингу інфраструктури Києва, відключень води та фінансів.', btn: 'Відкрити', contactTitle: 'ЗВ’ЯЖІТЬСЯ' },
+                    ru: { flag: 'https://flagcdn.com/ru.svg', status: 'ЦИФРОВОЕ АРХИТЕКТУРНОЕ ПРОИЗВОДСТВО', heroSub: 'Минималистичные и высокопроизводительные мобильные решения.', mikatDesc: 'Флагманское приложение с высокоточными алгоритмами для духовного руководства.', pawpalDesc: 'Умный помощник для отслеживания здоровья и рутины ваших питомцев.', inverDesc: 'Платформа мониторинга инфраструктуры Киева, отключений воды и финансов.', btn: 'Открыть', contactTitle: 'СВЯЗАТЬСЯ' }
                 };
 
                 const t = computed(() => languages[currentLang.value]);
 
-                const updateTime = () => {
-                    const now = new Date();
-                    currentTime.value = now.toLocaleTimeString('tr-TR');
-                };
-
-                const fetchWeather = async () => {
-                    try {
-                        const res = await fetch('https://wttr.in/Kyiv?format=j1');
-                        const data = await res.json();
-                        temp.value = data.current_condition[0].temp_C;
-                        weather.value = data.current_condition[0].weatherDesc[0].value;
-                    } catch (e) { console.log("Hava durumu yüklenemedi."); }
-                };
-
                 onMounted(() => {
-                    updateTime();
-                    setInterval(updateTime, 1000);
-                    fetchWeather();
+                    setInterval(() => { currentTime.value = new Date().toLocaleTimeString(); }, 1000);
                     
-                    // Giriş Animasyonu
-                    gsap.from(".hero-text", { y: 100, opacity: 0, duration: 1.5, ease: "power4.out" });
-                    gsap.from(".project-card", { scale: 0.9, opacity: 0, duration: 1, stagger: 0.3, ease: "power2.out" });
+                    // Hava Durumu Verisi
+                    fetch('https://wttr.in/Kyiv?format=j1').then(r => r.json()).then(data => {
+                        temp.value = data.current_condition[0].temp_C;
+                        weatherDesc.value = data.current_condition[0].weatherDesc[0].value;
+                    });
+
+                    // GSAP Animasyonları
+                    gsap.from("h1", { opacity: 0, scale: 0.8, duration: 1.5, ease: "expo.out" });
+                    gsap.from(".glass-card", { opacity: 0, y: 50, stagger: 0.2, duration: 1, ease: "power3.out" });
                 });
 
-                return { isDark, currentLang, languages, t, currentTime, temp, weather };
+                return { currentLang, languages, t, city, temp, weatherDesc, currentTime };
             }
         }).mount('#app');
     </script>
